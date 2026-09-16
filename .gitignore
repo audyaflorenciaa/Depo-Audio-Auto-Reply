@@ -1,0 +1,81 @@
+# =============================================================
+# DA AUTOLIGHT AI — Root .gitignore
+# Berlaku untuk seluruh monorepo (backend/ frontend/ database/)
+# =============================================================
+
+# ------------------------------------------------------------
+# WAJIB DIIGNORE — SECRETS & API KEYS
+# Jika file ini ter-push, API key bisa disalahgunakan orang lain
+# ------------------------------------------------------------
+.env
+backend/.env
+**/.env
+
+# ------------------------------------------------------------
+# WAJIB DIIGNORE — DATA CUSTOMER (PII)
+# Handoff log berisi history chat customer
+# WhatsApp export berisi nomor HP dan percakapan pribadi
+# ------------------------------------------------------------
+backend/handoff_log/*.json
+backend/data/whatsapp_exports/
+backend/data/vector_db/
+
+# ------------------------------------------------------------
+# WAJIB DIIGNORE — PYTHON ARTIFACTS
+# File-file ini di-generate otomatis, tidak perlu di-commit
+# ------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ------------------------------------------------------------
+# WAJIB DIIGNORE — VIRTUAL ENVIRONMENT
+# Ukurannya bisa ratusan MB, tidak boleh di-push ke Git
+# Orang lain cukup jalankan: pip install -r requirements.txt
+# ------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+backend/.venv/
+.python-version
+
+# ------------------------------------------------------------
+# BOLEH DIIGNORE — IDE & EDITOR FILES
+# Settings pribadi editor masing-masing developer
+# ------------------------------------------------------------
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ------------------------------------------------------------
+# BOLEH DIIGNORE — OS FILES
+# File sistem operasi yang tidak relevan dengan kode
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------
+# BOLEH DIIGNORE — TESTING & COVERAGE
+# ------------------------------------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ------------------------------------------------------------
+# BOLEH DIIGNORE — LOGS & NGROK
+# ------------------------------------------------------------
+*.log
+logs/
+*.ngrok.yml
+ngrok.exe
