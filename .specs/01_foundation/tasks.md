@@ -7,7 +7,7 @@
 
 ## Phase 1A — Project Scaffolding
 
-- [ ] **TASK-001:** Create the full folder structure as defined in `design.md`.
+- [ ] **TASK-001:** Create the full folder structure as defined in `docs/PROJECT_CONTEXT.md`.
   - Create: `app/`, `app/prompts/`, `app/data/`, `docs/`, `.specs/01_foundation/`, `handoff_log/`, `tests/`
   - Create placeholder `__init__.py` in: `app/`, `tests/`
   - Create `.gitkeep` in: `handoff_log/`
@@ -25,7 +25,7 @@
   pydantic==2.7.0
   ```
 
-- [ ] **TASK-004:** Copy `docs/product_data.md` into `app/data/product_data.md` (the bot's internal copy).
+- [ ] **TASK-004:** Copy `docs/PROJECT_CONTEXT.md (Product Data section)` into `app/data/product_data.md` (the bot's internal copy).
 
 ---
 
@@ -42,7 +42,7 @@
 ## Phase 1C — Session Store
 
 - [ ] **TASK-006:** Implement `app/session_store.py`.
-  - Define `Session` Pydantic model with all fields from `design.md`.
+  - Define `Session` Pydantic model with all fields from `docs/PROJECT_CONTEXT.md`.
   - Implement `get_session(chat_id: int) -> Session`.
   - Implement `save_session(chat_id: int, session: Session) -> None`.
   - Test: Create a session, save it, retrieve it, verify values.
@@ -64,7 +64,7 @@
 - [ ] **TASK-008:** Write `app/prompts/system_prompt.md`.
   - Must include: FSM state definitions, exact message templates, all 10 guardrail rules, JSON output schema.
   - Must NOT include the price list directly (it will be appended at runtime).
-  - Reference: `docs/bot_flow.md` for state definitions and guardrails.
+  - Reference: `docs/PROJECT_CONTEXT.md` for state definitions and guardrails.
 
 - [ ] **TASK-009:** Implement `app/llm_client.py`.
   - On module import, load `system_prompt.md` and `app/data/product_data.md` from disk.
@@ -80,7 +80,7 @@
 
 - [ ] **TASK-010:** Implement `app/state_machine.py`.
   - Implement `async process_message(chat_id: int, user_text: str) -> None`.
-  - Logic sequence as defined in `design.md` Section 2.
+  - Logic sequence as defined in `docs/PROJECT_CONTEXT.md` Section 2.
   - Handle `handoff=true` case: set state, call `handoff_logger.log()`, do NOT call Gemini again.
   - If state is already `S9: HANDOFF`, immediately return without calling Gemini.
   - Test: Simulate 3 messages (greeting, car info, goal) and verify state progresses correctly.

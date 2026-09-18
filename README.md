@@ -40,6 +40,7 @@ Depo Audio Auto-Reply/
 |---|---|
 | 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/) |
 | 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths. |
+| 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files. |
 
 ---
 
@@ -206,19 +207,20 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 
 ---
 
-## 📌 What The Agent Will Do Next (Phase 1 Code)
+## 📌 Tahap Kita Saat Ini (Current Stage)
 
-The next agent session will write these Python files in `backend/app/`:
+Kita sekarang berada di **Tahap 1: Setup & Foundation (Selesai)** dan siap masuk ke **Tahap 2: Penulisan Kode Python (Backend Bot)**.
+Pada sesi ini, saya (AI Agent) telah menggabungkan seluruh file spesifikasi dan dokumentasi yang bertebaran menjadi **1 pintu file saja** yaitu `docs/PROJECT_CONTEXT.md`. Ini akan menghemat token secara drastis untuk sesi-sesi selanjutnya dan membuat kita tidak kehilangan konteks.
 
-1. `config.py` — environment variable loader
-2. `session_store.py` — in-memory session management
-3. `telegram_client.py` — Telegram Bot API wrapper
-4. `prompts/system_prompt.md` — LLM system instruction
-5. `llm_client.py` — Gemini 1.5 Flash integration
-6. `state_machine.py` — conversation FSM brain
-7. `handoff_logger.py` — handoff event logger
-8. `webhook.py` — Telegram webhook endpoint
-9. `main.py` — FastAPI server entry point
+## 💬 Prompt Anda Selanjutnya (Next Prompt)
+
+> **Untuk Vibecoder:** Silakan copy-paste kotak di bawah ini dan kirimkan ke saya untuk melanjutkan pekerjaan. **Pastikan Anda sudah menyelesaikan STEP 1 sampai STEP 6 di atas terlebih dahulu.** Jika ada step yang sudah selesai (misal sudah pasang Python dan ngrok), silakan HAPUS step tersebut dari file README ini agar tidak menumpuk.
+
+```text
+Halo AI, saya sudah menyelesaikan STEP 1 sampai 6 di README. Mari kita mulai menulis kode Python Phase 1. 
+Baca `docs/PROJECT_CONTEXT.md` dan `.specs/01_foundation/tasks.md`. 
+Kerjakan TASK-005 (config.py), TASK-006 (session_store.py), dan TASK-007 (telegram_client.py) terlebih dahulu.
+```
 
 Full task list: [`.specs/01_foundation/tasks.md`](.specs/01_foundation/tasks.md)
 

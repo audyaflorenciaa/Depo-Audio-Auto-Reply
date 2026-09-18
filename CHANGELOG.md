@@ -1,4 +1,4 @@
-﻿# 📋 CHANGELOG — DA AUTOLIGHT AI Bot
+# 📋 CHANGELOG — DA AUTOLIGHT AI Bot
 
 > **For the AI Agent:** Update this file at the END of every session where code or docs were changed.
 > Format strictly as shown below. Be concise. Every entry must have Date, What Changed, and Next Steps.
@@ -6,6 +6,36 @@
 ---
 
 ## Session Log
+
+---
+
+### 2026-09-18 — Session 3 (Doc Consolidation)
+
+**What was done:**
+- Consolidated multiple fragmented specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`)
+- Deleted all redundant files to save AI token usage for future sessions
+- Updated `tasks.md` to point to the new unified context file
+- Updated `README.md` to guide the vibecoder on the exact next prompt and current status
+
+**Files Created/Modified:**
+- `docs/PROJECT_CONTEXT.md` <- NEW (Consolidated Master Spec)
+- `.specs/01_foundation/design.md` <- DELETED (Merged)
+- `.specs/01_foundation/requirements.md` <- DELETED (Merged)
+- `docs/bot_flow.md` <- DELETED (Merged)
+- `docs/product_data.md` <- DELETED (Merged)
+- `docs/tech_stack.md` <- DELETED (Merged)
+- `Depo Audio Data.md` <- DELETED (Redundant duplicate)
+- `.specs/01_foundation/tasks.md` <- MODIFIED (updated references)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+- `README.md` <- MODIFIED (updated Next Prompt section)
+
+**README Human Steps Status:**
+- STEP 1 (Python) — Not verified yet
+- STEP 2 (Telegram BotFather token) — Not done yet
+- STEP 3 (Gemini API Key) — Not done yet
+- STEP 4 (Create `.env`) — Not done yet
+- STEP 5 (Python venv + pip install) — Not done yet
+- STEP 6 (Install ngrok) — Not done yet
 
 ---
 
@@ -73,12 +103,6 @@ Order of implementation:
 1. `backend/app/config.py` — env var loader (TASK-005)
 2. `backend/app/session_store.py` — in-memory sessions (TASK-006)
 3. `backend/app/telegram_client.py` — Telegram API wrapper (TASK-007)
-4. `backend/app/prompts/system_prompt.md` — LLM instruction (TASK-008)
-5. `backend/app/llm_client.py` — Gemini Flash integration (TASK-009)
-6. `backend/app/state_machine.py` — conversation FSM (TASK-010)
-7. `backend/app/handoff_logger.py` — handoff event logger (TASK-011)
-8. `backend/app/webhook.py` — Telegram webhook endpoint (TASK-012)
-9. `backend/app/main.py` — FastAPI server entry point (TASK-013)
 
 **PREREQUISITE (Human must do first):**
 Before agent writes code, the human must complete README STEP 1-6.
