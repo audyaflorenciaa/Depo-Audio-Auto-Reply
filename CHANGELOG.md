@@ -46,6 +46,68 @@
 
 ---
 
+### 2026-09-19 — Session 1 (Setup Supabase ENV)
+
+**What was done:**
+- Updated `backend/.env.example` and `.env.example` to include Supabase credentials template
+- Created `.env` files in root and `backend/` from the template
+
+**Files Created/Modified:**
+- `backend/.env.example` <- MODIFIED (Uncommented Supabase section)
+- `.env.example` <- MODIFIED (Updated template)
+- `.env` <- NEW (Root environment variables)
+- `backend/.env` <- NEW (Backend environment variables)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+
+**README Human Steps Status:**
+- STEP 1 (Python) — Not verified yet
+- STEP 2 (Telegram BotFather token) — Not done yet
+- STEP 3 (Gemini API Key) — Not done yet
+- STEP 4 (Create `.env`) — Done (Template created, needs filling)
+- STEP 5 (Python venv + pip install) — Not done yet
+- STEP 6 (Install ngrok) — Not done yet
+
+---
+
+### 2026-09-19 — Session 2 (Full Backend Code Implementation)
+
+**What was done:**
+- Wrote ALL Phase 1 backend Python modules (TASK-001 through TASK-013)
+- Added Supabase as active dependency in `requirements.txt`
+- Created config loader, Supabase client, session store (Supabase-backed)
+- Created Telegram client, LLM client (Gemini), handoff logger
+- Created state machine (FSM brain), webhook route, FastAPI main entry point
+- Created system prompt with FSM rules, guardrails, and JSON schema
+- Created product data file (source of truth for prices)
+- Updated `.specs/01_foundation/tasks.md` to mark TASK-001–013 as done
+
+**Files Created/Modified:**
+- `backend/requirements.txt` <- MODIFIED (added supabase==2.5.0)
+- `backend/app/__init__.py` <- NEW
+- `backend/app/config.py` <- NEW (env var loader)
+- `backend/app/supabase_client.py` <- NEW (Supabase connection)
+- `backend/app/session_store.py` <- NEW (session CRUD via Supabase)
+- `backend/app/telegram_client.py` <- NEW (Telegram API wrapper)
+- `backend/app/llm_client.py` <- NEW (Gemini API wrapper)
+- `backend/app/handoff_logger.py` <- NEW (handoff log writer)
+- `backend/app/state_machine.py` <- NEW (FSM brain)
+- `backend/app/webhook.py` <- NEW (POST /webhook route)
+- `backend/app/main.py` <- NEW (FastAPI entry point)
+- `backend/app/prompts/system_prompt.md` <- NEW (LLM instruction)
+- `backend/app/data/product_data.md` <- NEW (price list)
+- `.specs/01_foundation/tasks.md` <- MODIFIED (TASK-001–013 checked)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+
+**README Human Steps Status:**
+- STEP 1 (Python) — Not verified yet
+- STEP 2 (Telegram BotFather token) — Not done yet
+- STEP 3 (Gemini API Key) — Not done yet
+- STEP 4 (Create `.env`) — Done (Template created, needs filling with real values)
+- STEP 5 (Python venv + pip install) — Not done yet
+- STEP 6 (Install ngrok) — Not done yet
+
+---
+
 ### 2026-09-18 — Session 3 (Doc Consolidation)
 
 **What was done:**
@@ -134,17 +196,20 @@
 
 > *(Updated each session — the agent current game plan)*
 
-**Next session goal:** Write Phase 1 Python code in `backend/app/`
+**All Phase 1 Python code has been written (TASK-001 through TASK-013). ✅**
 
-Order of implementation:
-1. `backend/app/config.py` — env var loader (TASK-005)
-2. `backend/app/session_store.py` — in-memory sessions (TASK-006)
-3. `backend/app/telegram_client.py` — Telegram API wrapper (TASK-007)
+**PREREQUISITE (Human must do BEFORE testing):**
+1. Create a Supabase project and create the `sessions` table (SQL provided in `session_store.py`)
+2. Fill in `.env` with real credentials (Telegram token, Gemini API key, Supabase URL + key)
+3. Set up Python virtual environment and run `pip install -r requirements.txt`
+4. Install and start ngrok
 
-**PREREQUISITE (Human must do first):**
-- STEP 1, 2, 3, 4, 5 appear complete (see status above).
-- STEP 6 (ngrok) still needs human confirmation — not required to start writing code, only required before end-to-end webhook testing (TASK-017/018).
-- The human should activate the recreated venv in their own terminal: `.\.venv\Scripts\Activate.ps1` (run from `backend/`).
+**Next session goal:** Local testing (TASK-014 through TASK-019)
+1. Install dependencies (`pip install -r requirements.txt`)
+2. Start server (`uvicorn app.main:app --reload --port 8000`)
+3. Verify `/health` endpoint
+4. Register Telegram webhook via ngrok
+5. End-to-end Telegram test
 
 Full task checklist: `.specs/01_foundation/tasks.md`
 

@@ -7,15 +7,15 @@
 
 ## Phase 1A — Project Scaffolding
 
-- [ ] **TASK-001:** Create the full folder structure as defined in `docs/PROJECT_CONTEXT.md`.
+- [x] **TASK-001:** Create the full folder structure as defined in `docs/PROJECT_CONTEXT.md`.
   - Create: `app/`, `app/prompts/`, `app/data/`, `docs/`, `.specs/01_foundation/`, `handoff_log/`, `tests/`
   - Create placeholder `__init__.py` in: `app/`, `tests/`
   - Create `.gitkeep` in: `handoff_log/`
 
-- [ ] **TASK-002:** Create `.gitignore`.
+- [x] **TASK-002:** Create `.gitignore`.
   - Must ignore: `.env`, `__pycache__/`, `*.pyc`, `handoff_log/*.json`, `.venv/`, `*.egg-info/`
 
-- [ ] **TASK-003:** Create `requirements.txt` with pinned versions:
+- [x] **TASK-003:** Create `requirements.txt` with pinned versions:
   ```
   fastapi==0.111.0
   uvicorn[standard]==0.29.0
@@ -25,13 +25,13 @@
   pydantic==2.7.0
   ```
 
-- [ ] **TASK-004:** Copy `docs/PROJECT_CONTEXT.md (Product Data section)` into `app/data/product_data.md` (the bot's internal copy).
+- [x] **TASK-004:** Copy `docs/PROJECT_CONTEXT.md (Product Data section)` into `app/data/product_data.md` (the bot's internal copy).
 
 ---
 
 ## Phase 1B — Configuration
 
-- [ ] **TASK-005:** Implement `app/config.py`.
+- [x] **TASK-005:** Implement `app/config.py`.
   - Load all env vars from `.env`.
   - Expose a `settings` singleton object.
   - Raise `ValueError` with clear message if `TELEGRAM_BOT_TOKEN`, `GEMINI_API_KEY`, or `WEBHOOK_SECRET_PATH` are missing or empty.
@@ -41,7 +41,7 @@
 
 ## Phase 1C — Session Store
 
-- [ ] **TASK-006:** Implement `app/session_store.py`.
+- [x] **TASK-006:** Implement `app/session_store.py`.
   - Define `Session` Pydantic model with all fields from `docs/PROJECT_CONTEXT.md`.
   - Implement `get_session(chat_id: int) -> Session`.
   - Implement `save_session(chat_id: int, session: Session) -> None`.
@@ -51,7 +51,7 @@
 
 ## Phase 1D — Telegram Client
 
-- [ ] **TASK-007:** Implement `app/telegram_client.py`.
+- [x] **TASK-007:** Implement `app/telegram_client.py`.
   - Implement `async send_message(chat_id, text, parse_mode="HTML")`.
   - Uses `httpx.AsyncClient`.
   - Logs success and failure. Does not raise on failure.
@@ -61,12 +61,12 @@
 
 ## Phase 1E — LLM Client
 
-- [ ] **TASK-008:** Write `app/prompts/system_prompt.md`.
+- [x] **TASK-008:** Write `app/prompts/system_prompt.md`.
   - Must include: FSM state definitions, exact message templates, all 10 guardrail rules, JSON output schema.
   - Must NOT include the price list directly (it will be appended at runtime).
   - Reference: `docs/PROJECT_CONTEXT.md` for state definitions and guardrails.
 
-- [ ] **TASK-009:** Implement `app/llm_client.py`.
+- [x] **TASK-009:** Implement `app/llm_client.py`.
   - On module import, load `system_prompt.md` and `app/data/product_data.md` from disk.
   - Concatenate them into a single system instruction string.
   - Implement `async generate_response(chat_history: list[dict]) -> dict`.
@@ -78,7 +78,7 @@
 
 ## Phase 1F — State Machine
 
-- [ ] **TASK-010:** Implement `app/state_machine.py`.
+- [x] **TASK-010:** Implement `app/state_machine.py`.
   - Implement `async process_message(chat_id: int, user_text: str) -> None`.
   - Logic sequence as defined in `docs/PROJECT_CONTEXT.md` Section 2.
   - Handle `handoff=true` case: set state, call `handoff_logger.log()`, do NOT call Gemini again.
@@ -89,7 +89,7 @@
 
 ## Phase 1G — Handoff Logger
 
-- [ ] **TASK-011:** Implement `app/handoff_logger.py`.
+- [x] **TASK-011:** Implement `app/handoff_logger.py`.
   - `log_handoff(chat_id, session, reason) -> None`
   - Creates directory `handoff_log/` if it does not exist.
   - Writes a JSON file: `handoff_log/{chat_id}_{YYYYMMDD_HHMMSS}.json`.
@@ -100,14 +100,14 @@
 
 ## Phase 1H — FastAPI Server & Webhook
 
-- [ ] **TASK-012:** Implement `app/webhook.py`.
+- [x] **TASK-012:** Implement `app/webhook.py`.
   - Define `POST /webhook/{secret_path}` endpoint.
   - Validate secret path. Return 403 if wrong.
   - Parse body as `TelegramUpdate` Pydantic model.
   - Extract `chat_id` and `text`. If `text` is None, send "Maaf, saya hanya bisa memproses pesan teks 😊" and return.
   - Call `state_machine.process_message()` inside a `try/except` block. Log all exceptions. Always return `{"ok": True}` (HTTP 200).
 
-- [ ] **TASK-013:** Implement `app/main.py`.
+- [x] **TASK-013:** Implement `app/main.py`.
   - Create FastAPI app with title "DA AUTOLIGHT AI Bot".
   - Add `GET /health` route returning `{"status": "ok", "version": "0.1.0"}`.
   - Include router from `webhook.py`.
