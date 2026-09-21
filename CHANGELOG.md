@@ -20,6 +20,32 @@
 
 ---
 
+### 2026-09-21 — Session 7 (Clarify shared vs per-machine setup) — by Calvin
+
+**What was done:**
+- Clarified with the human (Calvin) that Steps 1-5 were incorrectly treated as ALL per-developer.
+  In reality: Telegram Bot Token, Gemini API Key, and `.env` values belong to ONE bot/business,
+  not one per developer — creating separate tokens would fragment testing into two different
+  bots. Only Python installation and venv creation are genuinely per-machine.
+- Confirmed Calvin has completed Step 1 (Python 3.11+) and Step 5 (venv + deps) — marked ✅ Done.
+- Restructured README.md checklist into two sections: "Shared setup" (Telegram token / Gemini key
+  / `.env` — done once by Calvin, then the `.env` file itself is handed to Audya offline/out-of-band,
+  never through git) and "Per-machine setup" (Python + venv — genuinely separate per laptop).
+- Updated "Tahap Kita Saat Ini" to reflect this: Audya's next actions are (a) receive `.env` from
+  Calvin offline, (b) do her own Python/venv setup, (c) add Supabase credentials to the shared `.env`.
+
+**Files Created/Modified:**
+- `README.md` <- MODIFIED (split Steps 1-5 into "shared" vs "per-machine" sections, updated checklist and current stage)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+
+**README Human Steps Status:**
+- Shared (Telegram token, Gemini key, `.env` template) — ✅ Done by Calvin, to be handed to Audya offline.
+- Step 1 (Python 3.11+) — ✅ Done for Calvin. ⬜ Not done yet for Audya.
+- Step 5 (venv + pip install) — ✅ Done for Calvin. ⬜ Not done yet for Audya.
+- Step 6 (ngrok) — Not done yet (either developer).
+
+---
+
 ### 2026-09-21 — Session 6 (Venv Fix — Python 3.7 → 3.12) — by Calvin
 
 **What was done:**
@@ -213,10 +239,13 @@ leave it as unverified rather than assume.
 **All Phase 1 Python code has been written (TASK-001 through TASK-013). ✅**
 
 **PREREQUISITE (Human must do BEFORE testing):**
-1. Create a Supabase project and create the `sessions` table (SQL provided in `session_store.py`)
-2. Fill in `.env` with real credentials (Telegram token, Gemini API key, Supabase URL + key)
-3. Set up Python virtual environment and run `pip install -r requirements.txt`
-4. Install and start ngrok
+1. Calvin sends the filled-in `backend/.env` file to Audya OFFLINE (not through git — it has
+   secrets). Telegram token and Gemini key are shared across the team, not per-developer.
+2. Audya places that `.env` file at `backend/.env` on her own machine, then completes Step 1
+   (Python 3.11+) and Step 5 (venv + `pip install -r requirements.txt`) herself.
+3. Create a Supabase project and create the `sessions` table (SQL provided in `session_store.py`),
+   add `SUPABASE_URL` / key to the shared `.env`.
+4. Install and start ngrok (Step 6 — either developer, whoever runs the local test).
 
 **Next session goal:** Local testing (TASK-014 through TASK-019)
 1. Install dependencies (`pip install -r requirements.txt`)

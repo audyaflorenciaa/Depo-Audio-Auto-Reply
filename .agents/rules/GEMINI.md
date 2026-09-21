@@ -173,6 +173,24 @@ losing track of context or causing git conflicts:
 - If `git pull` reports local uncommitted changes that would conflict, stop and tell the human
   instead of forcing the pull.
 
+### 7.2b Shared credentials vs. per-machine setup — do not confuse these
+
+Not everything in "Steps 1-5" is per-developer. Split them correctly:
+
+- **Shared, done ONCE for the whole team:** Telegram Bot Token, Gemini API Key, Supabase
+  URL/key, and the resulting filled-in `.env` file. These belong to the bot/business, not to an
+  individual developer. If a second developer creates their OWN Telegram token or Gemini key,
+  that creates a SEPARATE bot / project — testing between developers would no longer be
+  consistent. The correct flow: one developer obtains these once, then hands the actual `.env`
+  file to the other developer OUT OF BAND (e.g. private chat, encrypted transfer) — never via
+  git, since `.env` holds secrets and is gitignored by design.
+- **Per-machine, done by EACH developer separately:** Python 3.11+ installation and creating
+  their own local `.venv` + `pip install -r requirements.txt`. These cannot be shared because
+  they depend on each person's own operating system and file paths.
+- If a human asks you to help a new developer get set up, tell them clearly which category each
+  step falls into — do not tell a new developer to go make their own Telegram bot or Gemini key
+  unless the team has explicitly decided to run separate bots for parallel testing.
+
 ### 7.3 Machine differences are expected and fine
 
 - Each developer's machine may have a different Python installation path, OS, or even a

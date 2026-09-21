@@ -11,7 +11,8 @@
 Project ini dikerjakan oleh **lebih dari satu orang** (Calvin, Audya), di **laptop/IDE yang berbeda**, kadang gantian kadang paralel. Beberapa aturan wajib supaya tidak saling menimpa pekerjaan:
 
 - **Selalu `git pull` sebelum mulai kerja**, dan sebelum minta agent lanjutkan development. Kalau tidak, Anda mungkin kerja di atas versi file yang sudah usang.
-- **Setiap orang punya `.venv` dan `.env` sendiri**, lokal di laptop masing-masing — ini TIDAK pernah di-commit ke git (lihat `.gitignore`). Wajar kalau versi Python persisnya beda (3.11/3.12/3.13), yang penting minimal Python 3.11+.
+- **`.venv` selalu dibuat sendiri per laptop** (tidak pernah di-commit ke git). Wajar kalau versi Python persisnya beda (3.11/3.12/3.13), yang penting minimal Python 3.11+.
+- **`.env` isinya SATU untuk seluruh tim** (Telegram token, Gemini key, Supabase — milik bot/bisnis, bukan per-orang) — di-share antar developer secara offline (bukan lewat git, karena berisi secret), bukan dibuat ulang masing-masing. Lihat detail di bagian "Shared setup" di bawah.
 - **Selalu sebutkan nama Anda di prompt** ("Ini Calvin..." atau "Ini Audya...") supaya agent bisa mencatatnya di `CHANGELOG.md` dengan benar dan kita tidak bingung siapa mengerjakan apa.
 - Kalau `CHANGELOG.md` atau `README.md` konflik saat `git pull`/merge (karena dua orang menambah entry di waktu yang berdekatan), **jangan hapus entry orang lain** — gabungkan keduanya, urutkan berdasarkan tanggal/waktu.
 
@@ -61,46 +62,45 @@ Depo Audio Auto-Reply/
 ## ✅ What Needs To Be Done RIGHT NOW (Human Developer Tasks)
 
 > Complete these steps before the next agent session writes any Python code.
->
-> ⚠️ **Steps 1–5 are PER-MACHINE.** Each developer has their own laptop, their own Python
-> installation, and their own local `.venv`/`.env` (never committed to git — see `.gitignore`).
-> One person finishing these steps does NOT mean the other person is done. Track each person's
-> status separately in the checklist below. **Once BOTH Calvin and Audya have checked off all
-> of Steps 1–5, this whole section can be deleted from the README** — the agent will do that
-> automatically the next time it updates this file, once both columns are ✅.
 
-### Setup Checklist (per developer, per machine)
+### 🔑 Shared setup (Telegram token, Gemini key, `.env`) — DO NOT DUPLICATE
+
+**Telegram Bot Token dan Gemini API Key adalah milik SATU bisnis/bot, bukan per-orang.** Kalau
+Audya membuat token/key sendiri, itu jadi bot Telegram / project Gemini yang BERBEDA, dan testing
+antara Calvin & Audya jadi tidak sinkron (dua bot berbeda, harga/respons bisa beda konfigurasi).
+
+- Calvin sudah punya Telegram Bot Token, Gemini API Key, dan `.env` terisi.
+- Calvin akan mengirim FILE `.env` yang sudah terisi ke Audya secara **offline** (chat pribadi,
+  bukan lewat git/commit — karena `.env` berisi secret dan sudah benar di-`.gitignore`).
+- **Audya tinggal:** taruh file `.env` yang diterima itu ke `backend/.env` di laptopnya sendiri.
+  Tidak perlu buka BotFather atau Google AI Studio sendiri.
+- Kalau nanti butuh bot Telegram testing terpisah (misal supaya Calvin & Audya bisa test
+  bersamaan tanpa saling ganggu conversation state), baru itu alasan sah untuk buat token kedua
+  — tapi itu keputusan yang harus didiskusikan dulu, bukan default.
+
+### 💻 Per-machine setup (WAJIB masing-masing, tidak bisa di-share)
+
+> Ini beda laptop, beda instalasi Python, jadi setiap orang wajib melakukan ini sendiri.
+> **Begitu SEMUA kolom di bawah ✅, section checklist ini akan dihapus dari README** oleh agent
+> supaya tidak menumpuk — tapi tetap tercatat permanen di `CHANGELOG.md` siapa yang menyelesaikan
+> apa dan kapan.
 
 | Step | What to do | Calvin | Audya |
 |---|---|---|---|
-| 1 | Verify Python 3.11+ installed (`python --version` or `py -0p` to list versions) | ❓ Not verified (3.12.4 seen once, not reconfirmed by Calvin) | ⬜ Not done yet |
-| 2 | Get Telegram Bot Token from @BotFather | ❓ Not verified (plausible value in `.env`, not confirmed by Calvin) | ⬜ Not done yet |
-| 3 | Get Gemini API Key from https://aistudio.google.com/ | ❓ Not verified (plausible value in `.env`, not confirmed by Calvin) | ⬜ Not done yet |
-| 4 | Create `backend/.env` from `.env.example`, fill in real values | ❓ Not verified (file exists, values not confirmed real) | ⬜ Not done yet |
-| 5 | Create venv + install deps (see commands below) | ❓ Not verified (venv was recreated + installed successfully in one session, not reconfirmed since) | ⬜ Not done yet |
-
-> **Calvin dan Audya:** kolom di atas ditandai "Not verified" sampai masing-masing dari Anda
-> mengonfirmasi ulang secara eksplisit ke agent di sesi Anda sendiri. Agent tidak akan menandai
-> ✅ Done hanya berdasarkan riwayat sesi lama atau karena ada kode di repo.
+| 1 | Verify Python 3.11+ installed (`py -0p`) | ✅ Done (Python 3.12.4, confirmed by Calvin) | ⬜ Not done yet |
+| 5 | Create venv + `pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv recreated with Python 3.12, all deps installed) | ⬜ Not done yet |
 
 > **How to update this table:** whoever finishes a step tells the agent in their prompt
-> (e.g. "Ini Audya, saya sudah selesai Step 1 dan 2"), and the agent flips `⬜ Not done yet`
-> to `✅ Done` for that person's column. Do not mark the other person's column — only the
-> agent updates this table, based on what each human reports.
+> (e.g. "Ini Audya, saya sudah selesai Step 1 dan 5"), and the agent flips `⬜ Not done yet`
+> to `✅ Done` for that person's column. Do not mark the other person's column.
 
-#### Commands for Steps 1–5 (run these on YOUR OWN machine)
+#### Commands for Steps 1 & 5 (run these on YOUR OWN machine)
 
 ```powershell
 # STEP 1 — check Python version (need 3.11+)
 py -0p
 # If you have multiple versions, use the specific one, e.g.:
 py -3.12 --version
-
-# STEP 4 — create your .env (inside backend/ folder)
-Copy-Item .env.example .env
-# then open .env and fill in TELEGRAM_BOT_TOKEN, GEMINI_API_KEY, WEBHOOK_SECRET_PATH
-# generate a random secret path with:
-python -c "import secrets; print(secrets.token_hex(16))"
 
 # STEP 5 — create venv with Python 3.11+ (inside backend/ folder)
 py -3.12 -m venv .venv          # use whichever 3.11+ version YOUR machine has
@@ -122,7 +122,9 @@ cd backend
 
 ---
 
-### STEP 6 — Install ngrok (for local testing)
+### 🌐 Additional per-machine setup
+
+#### STEP 6 — Install ngrok (for local testing)
 
 ngrok creates a public HTTPS tunnel to your local machine so Telegram can reach it.
 
@@ -137,7 +139,7 @@ ngrok config add-authtoken <your-authtoken>
 
 ---
 
-### STEP 7 — (Future) WhatsApp Chat Export for Phase 2
+#### STEP 7 — (Future) WhatsApp Chat Export for Phase 2
 
 This does NOT need to be done now. When Phase 2 begins, you will need to export past WhatsApp conversations with real DA AUTOLIGHT customers:
 
@@ -153,9 +155,10 @@ This does NOT need to be done now. When Phase 2 begins, you will need to export 
 ## 🚀 Running the Bot
 
 > Phase 1 Python code is DONE (TASK-001–013). Next step is local testing (TASK-014–019) — see below.
-> You still need: (a) Steps 1–5 done on YOUR machine, (b) a Supabase project with the `sessions` table
-> created (Audya added Supabase as the session store — see `backend/app/supabase_client.py` and
-> `backend/app/session_store.py` for the required schema), (c) real values filled into `backend/.env`.
+> You still need: (a) Python + venv set up on YOUR machine (Steps 1 & 5), (b) the shared `backend/.env`
+> file received from Calvin and placed in your `backend/` folder, (c) a Supabase project with the
+> `sessions` table created (Audya added Supabase as the session store — see
+> `backend/app/supabase_client.py` and `backend/app/session_store.py` for the required schema).
 
 ```powershell
 # From the backend/ folder with .venv active:
@@ -206,9 +209,9 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 **Tahap 2 sudah selesai:** Audya sudah menulis semua kode Python Phase 1 (TASK-001–013) — `config.py`, `session_store.py` (pakai Supabase, bukan in-memory dict), `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, dan product data.
 
 **Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Yang perlu dilakukan:
-1. **Setiap developer** menyelesaikan Steps 1–5 di laptop masing-masing (lihat checklist di atas). Status Audya di checklist itu masih ditandai "Not done yet" — belum ada konfirmasi eksplisit dari Audya soal ini, meski dia sudah menulis kode. **Perlu dikonfirmasi ulang ke Audya.**
-2. Buat project Supabase + tabel `sessions` (schema ada di `backend/app/session_store.py` dan `backend/app/supabase_client.py`) — ini kebutuhan baru yang tidak ada di rencana awal (awalnya sesi disimpan in-memory, Audya mengubahnya ke Supabase).
-3. Isi `backend/.env` dengan kredensial asli (Telegram, Gemini, Supabase URL + key).
+1. **Calvin** kirim file `backend/.env` yang sudah terisi ke Audya secara offline (chat pribadi, bukan git).
+2. **Audya** taruh file itu di `backend/.env` di laptopnya, lalu selesaikan Step 1 & 5 (Python + venv) sendiri — lihat checklist di atas.
+3. Buat project Supabase + tabel `sessions` (schema ada di `backend/app/session_store.py` dan `backend/app/supabase_client.py`) — ini kebutuhan baru yang tidak ada di rencana awal (awalnya sesi disimpan in-memory, Audya mengubahnya ke Supabase). Tambahkan `SUPABASE_URL` dan key-nya ke `.env` yang di-share.
 4. Jalankan server, test lewat ngrok + Telegram end-to-end.
 
 ## 💬 Prompt Harian Anda (Pakai Ini Setiap Mulai Sesi Baru)
