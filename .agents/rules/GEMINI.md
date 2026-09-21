@@ -3,6 +3,41 @@
 These rules apply to every AI agent session working on this project.
 Follow them strictly. No exceptions.
 
+This project has TWO human developers working on DIFFERENT machines: **Calvin** and **Audya**.
+Whichever one of them you are talking to, and whichever AI agent/IDE you are, these rules are
+identical and mandatory. Do not skip steps because "the other developer's agent probably already
+did it" — always verify yourself, in your own session.
+
+---
+
+## 0. SESSION START PROTOCOL (do this FIRST, every single session, no exceptions)
+
+Run these steps IN ORDER before doing anything else the human asked for:
+
+1. **Identify the developer.** If the human's prompt does not state their name (Calvin or
+   Audya), ASK before doing any file-modifying work.
+2. **Check git state.** Run `git status` and `git fetch origin` (or `git pull` if safe — see
+   Rule 8.2). If there are unpulled remote changes, PULL THEM NOW, before reading any project
+   files, so you are not working from a stale copy. If pulling would conflict with uncommitted
+   local changes, STOP and tell the human — do not force it.
+3. **Read `CHANGELOG.md`** — specifically the top-most (highest `Session N`) entries and the
+   "What The Agent Will Do Next" section at the bottom. This tells you exactly what the previous
+   session (by either developer) did and what is supposed to happen next.
+4. **Read `README.md`** — specifically the "What Needs To Be Done RIGHT NOW" checklist and
+   "Tahap Kita Saat Ini" section. This tells you the human setup status and current project stage.
+5. **Cross-check task status** in `.specs/01_foundation/tasks.md` against what CHANGELOG.md
+   claims. If they disagree (e.g. CHANGELOG says a task is done but the checkbox is unchecked,
+   or vice versa), flag this to the human — do not silently pick one as truth.
+6. **Verify the CURRENT developer's own machine setup** (Rule 3.1) by asking them directly if
+   it has not been confirmed in this session or a previous one under their name. Never assume
+   Steps 1-5 are done for a developer just because their code changes are in the repo — writing
+   code and having a working local Python/venv/`.env` are NOT the same thing.
+7. Only after steps 1-6 are done, proceed with whatever the human actually asked for this session.
+
+If any step above reveals a contradiction, inconsistency, or something that looks broken
+(duplicate session numbers, a checklist that doesn't match reality, etc.), tell the human
+BEFORE proceeding, and propose a fix.
+
 ---
 
 ## 1. ALWAYS update CHANGELOG.md after any code or doc changes
@@ -157,5 +192,48 @@ losing track of context or causing git conflicts:
   by keeping BOTH entries (one per developer/session), ordered by timestamp, never delete the
   other developer's entry to resolve a conflict.
 - Same rule applies to the README "Changelog (Agent Sessions)" table and "Tahap Kita Saat Ini" section.
+- When resolving a conflict that mixes two entries together (e.g. one entry's bullet points
+  bleeding into another's), re-separate them cleanly with correct headings — do not leave merged
+  content ambiguous about which developer/session it belongs to.
+- After resolving ANY merge conflict in `CHANGELOG.md`, re-check session numbers for duplicates
+  across the WHOLE file (not just the conflicted section) and renumber if needed, per Rule #6.
+
+---
+
+## 8. Git workflow: always push directly to `origin master`
+
+- This project does NOT use feature branches. Both Calvin and Audya commit and push directly
+  to `master`. Do not create a new branch unless the human explicitly asks for one.
+- Before pushing: `git pull` (or `git fetch` + merge/rebase) first, to catch any changes the
+  other developer already pushed. Resolve conflicts per Rule 7.4 if they occur.
+- Stage only the files relevant to the current session's changes (`git add <specific files>`),
+  never blanket `git add .` unless you have reviewed `git status` and confirmed every changed
+  file belongs in this commit.
+- Only commit/push when the human explicitly asks you to (e.g. "add commit push", "push ke
+  master"). Do not push automatically at the end of every session.
+- Use a short, descriptive commit message summarizing the session's actual changes.
+- After pushing, you do not need to open a pull request — direct push to `master` is the agreed
+  workflow for this project.
+
+---
+
+## 9. Verifying Steps 1-5 (per-developer setup) — be strict about this
+
+This has caused real confusion before (a developer's setup status was assumed instead of
+confirmed). Follow this strictly:
+
+- You may ONLY mark a Step 1-5 checkbox as "✅ Done" for a developer if THAT developer said so
+  themselves in a prompt during a session with you or was directly verified by you running a
+  command in a live terminal session with them (e.g. you personally ran `python --version` and
+  saw the result on their machine, in their session).
+- Having written or committed Python code is NOT proof that Steps 1-5 are done — a developer
+  could have written code without ever running it locally, or someone else could have written
+  it for them.
+- If a developer's status is unconfirmed, the checklist MUST show "⬜ Not done yet" or
+  "❓ Not verified", never "✅ Done", no matter how much other evidence suggests it's probably fine.
+- If you are Audya's agent and you see Calvin's column already marked ✅, or vice versa — trust
+  that mark (a prior agent already confirmed it directly with that person), but never mark or
+  edit the OTHER developer's column yourself. Only ever edit the column for the developer you
+  are currently talking to.
 
 ---

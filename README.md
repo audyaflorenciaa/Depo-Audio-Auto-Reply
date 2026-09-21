@@ -53,7 +53,8 @@ Depo Audio Auto-Reply/
 | 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/)                                                                                                                                                                                              |
 | 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths.                                                                                  |
 | 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files. |
-| 2026-09-21 | **Session 4:** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully.                                                                                      |
+| 2026-09-19 | **Session 4 & 5 (Audya):** Filled in `.env.example` with Supabase template, then wrote ALL Phase 1 backend Python code (`config.py`, `session_store.py`, `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, product data). TASK-001–013 done. |
+| 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                      |
 
 ---
 
@@ -72,11 +73,15 @@ Depo Audio Auto-Reply/
 
 | Step | What to do | Calvin | Audya |
 |---|---|---|---|
-| 1 | Verify Python 3.11+ installed (`python --version` or `py -0p` to list versions) | ✅ Done (3.12.4) | ⬜ Not done yet |
-| 2 | Get Telegram Bot Token from @BotFather | ✅ Done | ⬜ Not done yet |
-| 3 | Get Gemini API Key from https://aistudio.google.com/ | ✅ Done | ⬜ Not done yet |
-| 4 | Create `backend/.env` from `.env.example`, fill in real values | ✅ Done | ⬜ Not done yet |
-| 5 | Create venv + install deps (see commands below) | ✅ Done (Python 3.12) | ⬜ Not done yet |
+| 1 | Verify Python 3.11+ installed (`python --version` or `py -0p` to list versions) | ❓ Not verified (3.12.4 seen once, not reconfirmed by Calvin) | ⬜ Not done yet |
+| 2 | Get Telegram Bot Token from @BotFather | ❓ Not verified (plausible value in `.env`, not confirmed by Calvin) | ⬜ Not done yet |
+| 3 | Get Gemini API Key from https://aistudio.google.com/ | ❓ Not verified (plausible value in `.env`, not confirmed by Calvin) | ⬜ Not done yet |
+| 4 | Create `backend/.env` from `.env.example`, fill in real values | ❓ Not verified (file exists, values not confirmed real) | ⬜ Not done yet |
+| 5 | Create venv + install deps (see commands below) | ❓ Not verified (venv was recreated + installed successfully in one session, not reconfirmed since) | ⬜ Not done yet |
+
+> **Calvin dan Audya:** kolom di atas ditandai "Not verified" sampai masing-masing dari Anda
+> mengonfirmasi ulang secara eksplisit ke agent di sesi Anda sendiri. Agent tidak akan menandai
+> ✅ Done hanya berdasarkan riwayat sesi lama atau karena ada kode di repo.
 
 > **How to update this table:** whoever finishes a step tells the agent in their prompt
 > (e.g. "Ini Audya, saya sudah selesai Step 1 dan 2"), and the agent flips `⬜ Not done yet`
@@ -145,9 +150,12 @@ This does NOT need to be done now. When Phase 2 begins, you will need to export 
 
 ---
 
-## 🚀 Running the Bot (After Code is Written)
+## 🚀 Running the Bot
 
-> The Python application code has NOT been written yet. These commands will work after the agent writes Phase 1 code.
+> Phase 1 Python code is DONE (TASK-001–013). Next step is local testing (TASK-014–019) — see below.
+> You still need: (a) Steps 1–5 done on YOUR machine, (b) a Supabase project with the `sessions` table
+> created (Audya added Supabase as the session store — see `backend/app/supabase_client.py` and
+> `backend/app/session_store.py` for the required schema), (c) real values filled into `backend/.env`.
 
 ```powershell
 # From the backend/ folder with .venv active:
@@ -195,10 +203,13 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 
 ## 📌 Tahap Kita Saat Ini (Current Stage)
 
-Kita sekarang berada di **Tahap 1: Setup & Foundation**.
-- Di laptop **Calvin**: Steps 1–5 sudah selesai (venv dibuat ulang dengan Python 3.12 karena versi lama tidak kompatibel).
-- Di laptop **Audya**: Steps 1–5 belum dikerjakan — lihat checklist di atas.
-- Menulis kode Python (Tahap 2) bisa dimulai sekarang di laptop yang sudah selesai setup-nya. Setiap developer tetap perlu menyelesaikan Steps 1–5 di laptop masing-masing sebelum bisa menjalankan/test bot secara lokal.
+**Tahap 2 sudah selesai:** Audya sudah menulis semua kode Python Phase 1 (TASK-001–013) — `config.py`, `session_store.py` (pakai Supabase, bukan in-memory dict), `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, dan product data.
+
+**Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Yang perlu dilakukan:
+1. **Setiap developer** menyelesaikan Steps 1–5 di laptop masing-masing (lihat checklist di atas). Status Audya di checklist itu masih ditandai "Not done yet" — belum ada konfirmasi eksplisit dari Audya soal ini, meski dia sudah menulis kode. **Perlu dikonfirmasi ulang ke Audya.**
+2. Buat project Supabase + tabel `sessions` (schema ada di `backend/app/session_store.py` dan `backend/app/supabase_client.py`) — ini kebutuhan baru yang tidak ada di rencana awal (awalnya sesi disimpan in-memory, Audya mengubahnya ke Supabase).
+3. Isi `backend/.env` dengan kredensial asli (Telegram, Gemini, Supabase URL + key).
+4. Jalankan server, test lewat ngrok + Telegram end-to-end.
 
 ## 💬 Prompt Harian Anda (Pakai Ini Setiap Mulai Sesi Baru)
 
@@ -207,9 +218,13 @@ Kita sekarang berada di **Tahap 1: Setup & Foundation**.
 ```text
 Ini [Calvin/Audya]. Saya mau lanjutkan development.
 
-1. Cek dulu: apakah ada perubahan dari git yang belum saya pull? Kalau ada, beri tahu saya dulu sebelum lanjut.
-2. Baca README.md dan CHANGELOG.md untuk cek status terakhir project dan siapa yang mengerjakan apa.
-3. Lanjutkan sesuai rencana di bagian "What The Agent Will Do Next" di CHANGELOG.md.
+Ikuti SESSION START PROTOCOL di .agents/rules/GEMINI.md (Rule #0) sebelum mengerjakan apapun:
+1. Cek git status/fetch — kalau ada perubahan yang belum saya pull, beri tahu saya dulu sebelum lanjut.
+2. Baca CHANGELOG.md (entry terbaru + bagian "What The Agent Will Do Next").
+3. Baca README.md (checklist Steps 1-5, dan "Tahap Kita Saat Ini").
+4. Cocokkan status task di .specs/01_foundation/tasks.md — kalau ada yang tidak sinkron dengan CHANGELOG, beri tahu saya.
+5. Tanyakan ke saya langsung status Steps 1-5 di kolom nama saya — JANGAN anggap sudah selesai hanya karena ada kode di repo.
+6. Setelah semua itu, lanjutkan sesuai rencana "What The Agent Will Do Next", atau ikuti instruksi tambahan saya di bawah.
 
 [opsional — isi salah satu atau lebih kalau relevan:]
 - Step setup yang baru saya selesaikan: ...
@@ -217,7 +232,9 @@ Ini [Calvin/Audya]. Saya mau lanjutkan development.
 - Saya mau fokus ke bagian tertentu dulu: ...
 ```
 
-**Kenapa template ini selalu sama:** agent akan otomatis cari tahu detail teknis (task mana yang jalan, file mana yang perlu dibaca) dari `CHANGELOG.md` dan `.specs/01_foundation/tasks.md` sendiri. Anda tidak perlu hafal nomor `TASK-XXX` atau nama file spesifikasi setiap hari — cukup pastikan nama Anda dan poin 1-3 di atas selalu ada.
+**Kenapa template ini selalu sama:** agent akan otomatis cari tahu detail teknis (task mana yang jalan, file mana yang perlu dibaca) dari `CHANGELOG.md` dan `.specs/01_foundation/tasks.md` sendiri. Anda tidak perlu hafal nomor `TASK-XXX` atau nama file spesifikasi setiap hari — cukup pastikan nama Anda dan poin 1-6 di atas selalu diikuti.
+
+> ⚠️ **Untuk Audya:** kalau bot/agent IDE Anda belum pernah baca `.agents/rules/GEMINI.md`, minta dia baca file itu secara eksplisit di awal sesi pertama Anda. File itu berisi SOP wajib (termasuk Session Start Protocol Rule #0) yang harus diikuti supaya CHANGELOG dan README tidak berantakan lagi seperti kemarin.
 
 Full task list: [`.specs/01_foundation/tasks.md`](.specs/01_foundation/tasks.md)
 
