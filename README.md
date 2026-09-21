@@ -49,13 +49,13 @@ Depo Audio Auto-Reply/
 
 ## 📅 Changelog (Agent Sessions)
 
-| Date       | Session Summary                                                                                                                                                                                                                                                                                 |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/)                                                                                                                                                                                              |
-| 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths.                                                                                  |
-| 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files. |
+| Date       | Session Summary                                                                                                                                                                                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/)                                                                                                                                                                                                                                          |
+| 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths.                                                                                                                              |
+| 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files.                                             |
 | 2026-09-19 | **Session 4 & 5 (Audya):** Filled in `.env.example` with Supabase template, then wrote ALL Phase 1 backend Python code (`config.py`, `session_store.py`, `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, product data). TASK-001–013 done. |
-| 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                      |
+| 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                   |
 
 ---
 
@@ -85,10 +85,10 @@ antara Calvin & Audya jadi tidak sinkron (dua bot berbeda, harga/respons bisa be
 > supaya tidak menumpuk — tapi tetap tercatat permanen di `CHANGELOG.md` siapa yang menyelesaikan
 > apa dan kapan.
 
-| Step | What to do | Calvin | Audya |
-|---|---|---|---|
-| 1 | Verify Python 3.11+ installed (`py -0p`) | ✅ Done (Python 3.12.4, confirmed by Calvin) | ⬜ Not done yet |
-| 5 | Create venv + `pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv recreated with Python 3.12, all deps installed) | ⬜ Not done yet |
+| Step | What to do                                                             | Calvin                                                        | Audya           |
+| ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------- | --------------- |
+| 1    | Verify Python 3.11+ installed (`py -0p`)                             | ✅ Done (Python 3.12.4, confirmed by Calvin)                  | ⬜ Not done yet |
+| 5    | Create venv +`pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv recreated with Python 3.12, all deps installed) | ⬜ Not done yet |
 
 > **How to update this table:** whoever finishes a step tells the agent in their prompt
 > (e.g. "Ini Audya, saya sudah selesai Step 1 dan 5"), and the agent flips `⬜ Not done yet`
@@ -209,37 +209,69 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 **Tahap 2 sudah selesai:** Audya sudah menulis semua kode Python Phase 1 (TASK-001–013) — `config.py`, `session_store.py` (pakai Supabase, bukan in-memory dict), `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, dan product data.
 
 **Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Yang perlu dilakukan:
+
 1. **Calvin** kirim file `backend/.env` yang sudah terisi ke Audya secara offline (chat pribadi, bukan git).
 2. **Audya** taruh file itu di `backend/.env` di laptopnya, lalu selesaikan Step 1 & 5 (Python + venv) sendiri — lihat checklist di atas.
 3. Buat project Supabase + tabel `sessions` (schema ada di `backend/app/session_store.py` dan `backend/app/supabase_client.py`) — ini kebutuhan baru yang tidak ada di rencana awal (awalnya sesi disimpan in-memory, Audya mengubahnya ke Supabase). Tambahkan `SUPABASE_URL` dan key-nya ke `.env` yang di-share.
 4. Jalankan server, test lewat ngrok + Telegram end-to-end.
 
-## 💬 Prompt Harian Anda (Pakai Ini Setiap Mulai Sesi Baru)
+## 💬 Prompt Harian Anda (Pakai Ini Setiap Mulai Sesi Baru — SELAMANYA, Tidak Perlu Diubah)
 
-> **Untuk Calvin ATAU Audya:** Ini adalah template yang SAMA untuk siapapun, kapanpun, di tahap manapun project ini. Copy-paste, isi `[NAMA]`, tambahkan catatan kalau perlu, lalu kirim ke agent.
+> **Untuk Calvin ATAU Audya:** Template ini SENGAJA tidak menyebut nomor step/task/session
+> tertentu, karena angka-angka itu berubah terus setiap fase project. Template ini menyuruh
+> agent membaca file yang benar dan mengikuti prosedur yang benar — apapun isi filenya saat itu.
+> Copy-paste persis, isi `[NAMA]`, tambahkan catatan kalau perlu, lalu kirim ke agent.
 
 ```text
 Ini [Calvin/Audya]. Saya mau lanjutkan development.
 
-Ikuti SESSION START PROTOCOL di .agents/rules/GEMINI.md (Rule #0) sebelum mengerjakan apapun:
-1. Cek git status/fetch — kalau ada perubahan yang belum saya pull, beri tahu saya dulu sebelum lanjut.
-2. Baca CHANGELOG.md (entry terbaru + bagian "What The Agent Will Do Next").
-3. Baca README.md (checklist Steps 1-5, dan "Tahap Kita Saat Ini").
-4. Cocokkan status task di .specs/01_foundation/tasks.md — kalau ada yang tidak sinkron dengan CHANGELOG, beri tahu saya.
-5. Tanyakan ke saya langsung status Steps 1-5 di kolom nama saya — JANGAN anggap sudah selesai hanya karena ada kode di repo.
-6. Setelah semua itu, lanjutkan sesuai rencana "What The Agent Will Do Next", atau ikuti instruksi tambahan saya di bawah.
+Sebelum mengerjakan apapun, ikuti SESSION START PROTOCOL (Rule #0 di .agents/rules/GEMINI.md):
+
+1. GIT: Cek `git status` dan `git fetch origin`. Kalau ada perubahan remote yang belum saya
+   pull, tarik dulu (atau beri tahu saya jika ada konflik) — jangan kerja di atas file usang.
+
+2. BACA CHANGELOG.md: baca entry dengan Session N tertinggi (bukan yang paling atas — urutan
+   tampilan tidak selalu kronologis), dan baca section "What The Agent Will Do Next" di bagian
+   paling bawah file. Itu adalah rencana kerja saat ini.
+
+3. BACA README.md: baca SELURUH isi section "What Needs To Be Done RIGHT NOW" apapun bentuknya
+   saat ini (checklist, tabel, paragraf — bisa berubah bentuk antar fase), dan section
+   "Tahap Kita Saat Ini". Jangan asumsikan struktur section ini sama seperti sesi sebelumnya.
+
+4. CROSS-CHECK: cocokkan klaim di CHANGELOG.md dengan checkbox aktual di
+   `.specs/01_foundation/tasks.md` (atau spec folder fase berikutnya jika `01_foundation` sudah
+   selesai semua). Kalau ada yang tidak sinkron, beri tahu saya SEBELUM lanjut — jangan pilih
+   salah satu sebagai asumsi benar.
+
+5. VERIFIKASI SAYA SENDIRI: kalau ada checklist/status setup yang menyebut nama saya, tanyakan
+   LANGSUNG ke saya apakah itu masih akurat — jangan anggap sudah selesai hanya karena ada kode
+   atau file terkait di repo. Saya yang paling tahu status laptop saya sendiri.
+
+6. BARU SETELAH 1-5: lanjutkan sesuai rencana di "What The Agent Will Do Next", ATAU kerjakan
+   instruksi tambahan saya di bawah ini kalau ada.
+
+7. DI AKHIR SESI: kalau ada file yang berubah, update CHANGELOG.md (entry baru, nomor Session
+   lanjutan dari yang tertinggi, dengan nama saya), update README.md kalau status setup/tahap
+   project berubah, dan update checkbox task di file spec yang relevan. Kalau saya minta
+   push, jalankan `git add` (file spesifik saja) + `git commit` + `git push origin master`.
 
 [opsional — isi salah satu atau lebih kalau relevan:]
-- Step setup yang baru saya selesaikan: ...
-- Ada perubahan permintaan / fitur baru: ...
+- Step/setup yang baru saya selesaikan: ...
+- Ada perubahan permintaan / fitur baru / keputusan baru: ...
 - Saya mau fokus ke bagian tertentu dulu: ...
+- Push ke master setelah selesai: [ya/tidak]
 ```
 
-**Kenapa template ini selalu sama:** agent akan otomatis cari tahu detail teknis (task mana yang jalan, file mana yang perlu dibaca) dari `CHANGELOG.md` dan `.specs/01_foundation/tasks.md` sendiri. Anda tidak perlu hafal nomor `TASK-XXX` atau nama file spesifikasi setiap hari — cukup pastikan nama Anda dan poin 1-6 di atas selalu diikuti.
+**Kenapa template ini tidak akan pernah usang:** tidak ada satupun baris di atas yang menyebut
+"Step 1-5", "TASK-0XX", atau nomor Session tertentu. Semuanya berupa INSTRUKSI CARA MEMBACA file
+(CHANGELOG.md, README.md, file spec), bukan isi spesifik dari file itu. Isi file-file itu akan
+terus berubah sepanjang project, tapi cara agent membacanya tetap sama. Detail SOP lengkap selalu
+ada di `.agents/rules/GEMINI.md` Rule #0 — kalau README ini dan GEMINI.md Rule #0 berbeda, ikuti
+GEMINI.md karena itu sumber kebenaran (source of truth) untuk perilaku agent.
 
 > ⚠️ **Untuk Audya:** kalau bot/agent IDE Anda belum pernah baca `.agents/rules/GEMINI.md`, minta dia baca file itu secara eksplisit di awal sesi pertama Anda. File itu berisi SOP wajib (termasuk Session Start Protocol Rule #0) yang harus diikuti supaya CHANGELOG dan README tidak berantakan lagi seperti kemarin.
 
-Full task list: [`.specs/01_foundation/tasks.md`](.specs/01_foundation/tasks.md)
+Full task list: [`.specs/01_foundation/tasks.md`](.specs/01_foundation/tasks.md) *(path ini akan berubah kalau fase berikutnya punya folder spec baru — cek folder `.specs/` untuk yang terbaru)*
 
 ---
 

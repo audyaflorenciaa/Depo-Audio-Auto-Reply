@@ -12,31 +12,49 @@ did it" — always verify yourself, in your own session.
 
 ## 0. SESSION START PROTOCOL (do this FIRST, every single session, no exceptions)
 
+> This protocol is written generically on purpose — it never names a specific step number,
+> task number, or file path that will go stale. It describes HOW to read the project's tracking
+> files, not what they currently contain. This protocol does not change between project phases.
+
 Run these steps IN ORDER before doing anything else the human asked for:
 
 1. **Identify the developer.** If the human's prompt does not state their name (Calvin or
    Audya), ASK before doing any file-modifying work.
 2. **Check git state.** Run `git status` and `git fetch origin` (or `git pull` if safe — see
-   Rule 8.2). If there are unpulled remote changes, PULL THEM NOW, before reading any project
+   Rule 8). If there are unpulled remote changes, PULL THEM NOW, before reading any project
    files, so you are not working from a stale copy. If pulling would conflict with uncommitted
    local changes, STOP and tell the human — do not force it.
-3. **Read `CHANGELOG.md`** — specifically the top-most (highest `Session N`) entries and the
-   "What The Agent Will Do Next" section at the bottom. This tells you exactly what the previous
-   session (by either developer) did and what is supposed to happen next.
-4. **Read `README.md`** — specifically the "What Needs To Be Done RIGHT NOW" checklist and
-   "Tahap Kita Saat Ini" section. This tells you the human setup status and current project stage.
-5. **Cross-check task status** in `.specs/01_foundation/tasks.md` against what CHANGELOG.md
-   claims. If they disagree (e.g. CHANGELOG says a task is done but the checkbox is unchecked,
-   or vice versa), flag this to the human — do not silently pick one as truth.
-6. **Verify the CURRENT developer's own machine setup** (Rule 3.1) by asking them directly if
-   it has not been confirmed in this session or a previous one under their name. Never assume
-   Steps 1-5 are done for a developer just because their code changes are in the repo — writing
-   code and having a working local Python/venv/`.env` are NOT the same thing.
+3. **Read `CHANGELOG.md`** — find the entry with the HIGHEST `Session N` number (not necessarily
+   the topmost entry — order is not always strictly chronological, see the file's own header
+   note) and read the "What The Agent Will Do Next" section at the bottom. This tells you exactly
+   what the previous session (by either developer) did and what is supposed to happen next.
+4. **Read `README.md`** — read the ENTIRE "What Needs To Be Done RIGHT NOW" section as it
+   currently exists (its structure may change between phases — sometimes a checklist table,
+   sometimes plain steps, sometimes nothing if all setup is done) and the "Tahap Kita Saat Ini"
+   section. This tells you the human setup status and current project stage, whatever form it's
+   currently in.
+5. **Cross-check task status**: find the CURRENT active spec/task file (check the `.specs/`
+   folder for the most recent phase folder — it may no longer be `01_foundation` once that phase
+   is complete) and compare its checkboxes against what CHANGELOG.md claims. If they disagree,
+   flag this to the human — do not silently pick one as truth.
+6. **Verify the CURRENT developer's own machine/setup status** by asking them directly if it has
+   not been confirmed in THIS session. Never assume any setup step is done for a developer just
+   because their code changes are in the repo — writing code and having a working local
+   environment are NOT the same thing. (See Rule 9 for strict verification rules.)
 7. Only after steps 1-6 are done, proceed with whatever the human actually asked for this session.
 
 If any step above reveals a contradiction, inconsistency, or something that looks broken
 (duplicate session numbers, a checklist that doesn't match reality, etc.), tell the human
 BEFORE proceeding, and propose a fix.
+
+### 0.1 End-of-session checklist (do this before finishing, if you changed any files)
+
+1. Update `CHANGELOG.md` per Rule #1 (new entry, correct global session number, developer name).
+2. Update `README.md` ONLY if the human-facing setup status or current project stage actually
+   changed (Rule #3) — never touch it otherwise.
+3. Update checkboxes in whichever spec/task file is currently active (Rule #4).
+4. If the human asked you to commit/push, follow Rule #8 exactly (stage specific files, pull
+   first, push directly to `origin master`).
 
 ---
 
@@ -57,12 +75,10 @@ At the end of every session where you created, modified, or deleted files:
 - `path/to/file` <- reason
 
 **README Human Steps Status:**
-- STEP 1 (Python) — [Done / Not done yet / Not verified]
-- STEP 2 (Telegram token) — [Done / Not done yet / Not verified]
-- STEP 3 (Gemini API Key) — [Done / Not done yet / Not verified]
-- STEP 4 (.env file) — [Done / Not done yet / Not verified]
-- STEP 5 (venv + pip install) — [Done / Not done yet / Not verified]
-- STEP 6 (ngrok) — [Done / Not done yet / Not verified]
+- List whatever per-machine setup steps are CURRENTLY relevant in README.md's "What Needs To Be
+  Done RIGHT NOW" section (the exact steps change over time — do not copy an old list, look at
+  what's actually there right now), one line per step per developer, each as
+  [Done / Not done yet / Not verified].
 ```
 
 The `<Developer Name>` MUST be the name the human tells you in their prompt for this session
@@ -82,16 +98,18 @@ who wrote it) and increment by 1. Do not restart numbering per developer.
 
 ## 2. Cross-check your plan against README.md human steps
 
-Before writing any Python code or running any commands:
+Before writing any code or running any commands that need a working local environment:
 
-1. Read `README.md` sections: "What Needs To Be Done RIGHT NOW"
-2. Check if the human has completed the prerequisite steps (Python, .env, ngrok etc.)
-3. If the human has NOT completed the steps, DO NOT write code. Instead:
-   - Tell the human which README step they need to complete first
+1. Read whatever "What Needs To Be Done RIGHT NOW" (or equivalent) section currently exists in
+   `README.md`.
+2. Check if the CURRENT developer (the one you're talking to) has completed the prerequisites
+   listed there for their own machine.
+3. If they have NOT completed the steps, DO NOT write/run code that depends on them. Instead:
+   - Tell the human which step they need to complete first
    - Update `CHANGELOG.md` with current session note
    - Stop
 
-If the human's steps are complete, proceed with coding.
+If the human's steps are complete (confirmed by them, per Rule #9), proceed.
 
 ---
 
@@ -102,30 +120,36 @@ The README.md "What Needs To Be Done RIGHT NOW" section describes steps for the 
 - If nothing about the human's action changes, DO NOT touch README.md.
 - Never rewrite the tone or style of README.md — keep it plain English, beginner-friendly.
 
-### 3.1 Per-developer setup checklist (Steps 1-5)
+### 3.1 Per-developer setup checklists (any phase, any steps)
 
-Steps 1-5 in README.md are tracked in a table with one column per developer (Calvin, Audya)
-because each step is done locally on each person's own machine (Python install, `.env`, `.venv`).
+Whenever README.md has a setup checklist that is genuinely per-machine (see Rule 7.2b for what
+qualifies), track it with one column per developer (Calvin, Audya) — regardless of what the
+steps are called or numbered in that phase of the project.
 
 - Only flip a person's checkbox from `⬜ Not done yet` to `✅ Done` when THAT SPECIFIC PERSON
   tells you in their prompt that they finished it. Never mark a step done for a person who
   didn't report it, even if the other person's machine already works.
 - Never mark a step done just because code/files related to it exist — machine-local setup
-  (Python, .env, .venv) cannot be verified from git state; you can only trust what each human
-  says about their own machine, or what you directly checked via terminal ON A LIVE SESSION with
-  that person.
-- Once ALL developers have ✅ on ALL of Steps 1-5, collapse/delete the whole checklist table and
-  the "Commands for Steps 1-5" section from README.md in your next edit to that file, to avoid
-  clutter. Keep Step 6 (ngrok) and Step 7 (WhatsApp export, Phase 2) as they are not yet done.
-- If a NEW developer joins the project later, re-add the checklist table with a column for them.
+  cannot be verified from git state; you can only trust what each human says about their own
+  machine, or what you directly checked via terminal ON A LIVE SESSION with that person.
+- Once ALL developers have ✅ on ALL steps in a given checklist, collapse/delete that whole
+  checklist section from README.md in your next edit to that file, to avoid clutter — but only
+  after logging it as done in `CHANGELOG.md` first, so the history isn't lost.
+- If a NEW developer joins the project later, re-add a checklist table with a column for them,
+  for whatever setup is still relevant at that time.
+- This rule applies to ANY future setup checklist the project ever needs (e.g. a new API key,
+  a new local dependency, a new tool) — not just the original Phase 1 setup.
 
 ---
 
-## 4. Track task completion in .specs/01_foundation/tasks.md
+## 4. Track task completion in the active spec/task file
 
-When you complete a TASK (TASK-001 through TASK-021):
-- Change `- [ ]` to `- [x]` for that task.
-- Do this immediately after completing each task, not at the end.
+Whichever task checklist file is currently active (e.g. `.specs/01_foundation/tasks.md`, or a
+later phase's equivalent file once that exists):
+- Change `- [ ]` to `- [x]` for each task as soon as it's completed.
+- Do this immediately after completing each task, not at the end of the session.
+- If a new phase folder is created under `.specs/`, this rule applies to that file too — it is
+  not tied to the name "01_foundation" specifically.
 
 ---
 
@@ -175,7 +199,7 @@ losing track of context or causing git conflicts:
 
 ### 7.2b Shared credentials vs. per-machine setup — do not confuse these
 
-Not everything in "Steps 1-5" is per-developer. Split them correctly:
+Not every setup item is per-developer. Split them correctly, in ANY phase of the project:
 
 - **Shared, done ONCE for the whole team:** Telegram Bot Token, Gemini API Key, Supabase
   URL/key, and the resulting filled-in `.env` file. These belong to the bot/business, not to an
@@ -235,18 +259,18 @@ Not everything in "Steps 1-5" is per-developer. Split them correctly:
 
 ---
 
-## 9. Verifying Steps 1-5 (per-developer setup) — be strict about this
+## 9. Verifying any per-developer setup status — be strict about this
 
 This has caused real confusion before (a developer's setup status was assumed instead of
-confirmed). Follow this strictly:
+confirmed). Follow this strictly, for ANY per-machine setup step at ANY point in the project:
 
-- You may ONLY mark a Step 1-5 checkbox as "✅ Done" for a developer if THAT developer said so
-  themselves in a prompt during a session with you or was directly verified by you running a
+- You may ONLY mark a setup checkbox as "✅ Done" for a developer if THAT developer said so
+  themselves in a prompt during a session with you, or was directly verified by you running a
   command in a live terminal session with them (e.g. you personally ran `python --version` and
   saw the result on their machine, in their session).
-- Having written or committed Python code is NOT proof that Steps 1-5 are done — a developer
-  could have written code without ever running it locally, or someone else could have written
-  it for them.
+- Having written or committed code related to a setup step is NOT proof that step is done — a
+  developer could have written code without ever running it locally, or someone else could have
+  written it for them.
 - If a developer's status is unconfirmed, the checklist MUST show "⬜ Not done yet" or
   "❓ Not verified", never "✅ Done", no matter how much other evidence suggests it's probably fine.
 - If you are Audya's agent and you see Calvin's column already marked ✅, or vice versa — trust
