@@ -20,6 +20,57 @@
 
 ---
 
+### 2026-09-21 — Session 8 (Fix venv missing `supabase`, wrong SUPABASE_URL, discovered `sessions` table missing) — by Calvin
+
+**What was done:**
+- Verified Calvin's `.env`/venv status directly (per Rule #9): `backend/.venv` exists, Python
+  3.12.4 confirmed working. `backend/.env` has TELEGRAM_BOT_TOKEN, GEMINI_API_KEY,
+  WEBHOOK_SECRET_PATH, SUPABASE_URL, SUPABASE_SERVICE_KEY all filled with real-looking values.
+  `WEBHOOK_BASE_URL` is still a placeholder (expected — it's only known after ngrok starts).
+- Found root-level `.env` (not `backend/.env`) still has a placeholder `SUPABASE_SERVICE_KEY` —
+  confirmed via reading `backend/app/config.py` that this file is NEVER read by the app (it loads
+  `backend/.env` specifically via `Path(__file__).resolve().parent.parent / ".env"`). Root `.env`
+  is effectively dead/unused; left as-is, not a blocker.
+- Ran `pip install -r requirements.txt` in `backend/.venv` and found the `supabase` package was
+  missing (venv was created/installed before Audya added `supabase==2.5.0` to
+  `backend/requirements.txt`). Installed successfully.
+- Found `SUPABASE_URL` in `backend/.env` had an incorrect trailing `/rest/v1/` path — the
+  `supabase-py` client library appends this itself, so having it in the URL caused a double-path
+  error (`PGRST125: Invalid path specified`). Fixed by stripping the suffix, leaving just
+  `https://stnwwfjlalhurvvqoqwo.supabase.co`.
+- After the URL fix, connected successfully to the Supabase project, but discovered the
+  `sessions` table does not exist yet (`PGRST205: Could not find the table 'public.sessions'`).
+  This answers Calvin's earlier "I don't know" on whether the Supabase table was created — it
+  was NOT. The Supabase *project* exists and credentials are valid; only the *table* is missing.
+- Discussed with Calvin: the bot currently has NO car-model-to-lamp-size compatibility data
+  (e.g. "Toyota Avanza → 3 inch foglamp"). `product_data.md` only has price tables by inch size
+  and brand, not by car model. **Calvin decided:** build a real car-model → size compatibility
+  database (Option B), not just "always ask the customer" — but as a FUTURE phase, starting with
+  a small example dataset (~5-10 models) from staff, not the full catalogue on day one. Logged as
+  TASK-022 through TASK-025 in `.specs/01_foundation/tasks.md` under a new "Phase 2 (Future)"
+  section. Until that data exists, Phase 1's bot still asks the customer directly and hands off
+  if unknown — that behavior is unchanged for now.
+- **Calvin decided NOT to run the Supabase `sessions` table SQL today** — deferred to a future
+  session. Logged as TASK-013b (blocking task, not done) instead of executing it immediately.
+
+**Files Created/Modified:**
+- `backend/.venv/` <- MODIFIED (installed `supabase==2.5.0` and its dependencies, previously missing)
+- `backend/.env` <- MODIFIED (fixed `SUPABASE_URL`: removed incorrect `/rest/v1/` suffix)
+- `.specs/01_foundation/tasks.md` <- MODIFIED (added TASK-013b for the Supabase table creation;
+  added a new "Phase 2 (Future)" section with TASK-022 through TASK-025 for the car compatibility database)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+- `README.md` <- MODIFIED (documented the Supabase table SQL as a deferred next step, not done today)
+
+**README Human Steps Status:**
+- Shared setup (Telegram token, Gemini key, Supabase URL/key in `.env`) — ✅ Done, values present
+  in `backend/.env` and verified loadable by `config.py`.
+- Per-machine setup (Python 3.11+, venv) — ✅ Confirmed for Calvin this session (venv verified
+  live, Python 3.12.4). ⬜ Still not done/reported by Audya.
+- Supabase `sessions` table does not exist yet (TASK-013b) — confirmed NOT done, and intentionally
+  deferred by Calvin, not an oversight. Local testing (TASK-014+) stays blocked until it's created.
+
+---
+
 ### 2026-09-21 — Session 7 (Clarify shared vs per-machine setup) — by Calvin
 
 **What was done:**
@@ -237,22 +288,45 @@ leave it as unverified rather than assume.
 > *(Updated each session — the agent current game plan)*
 
 **All Phase 1 Python code has been written (TASK-001 through TASK-013). ✅**
+**Calvin's local environment is verified working (venv, `.env`, Supabase connection). ✅**
 
-**PREREQUISITE (Human must do BEFORE testing):**
-1. Calvin sends the filled-in `backend/.env` file to Audya OFFLINE (not through git — it has
-   secrets). Telegram token and Gemini key are shared across the team, not per-developer.
-2. Audya places that `.env` file at `backend/.env` on her own machine, then completes Step 1
-   (Python 3.11+) and Step 5 (venv + `pip install -r requirements.txt`) herself.
-3. Create a Supabase project and create the `sessions` table (SQL provided in `session_store.py`),
-   add `SUPABASE_URL` / key to the shared `.env`.
-4. Install and start ngrok (Step 6 — either developer, whoever runs the local test).
+**BLOCKER (deferred by Calvin, not done today — TASK-013b):**
+1. Open Supabase Dashboard (https://app.supabase.com/) → the project with URL
+   `stnwwfjlalhurvvqoqwo.supabase.co` → **SQL Editor** → New Query → run:
+   ```sql
+   CREATE TABLE sessions (
+       chat_id       BIGINT PRIMARY KEY,
+       state         TEXT NOT NULL DEFAULT 'S0',
+       car_brand     TEXT,
+       car_model     TEXT,
+       car_year      INTEGER,
+       goal          TEXT,
+       handoff       BOOLEAN NOT NULL DEFAULT FALSE,
+       handoff_reason TEXT,
+       message_history JSONB NOT NULL DEFAULT '[]'::jsonb,
+       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   );
+   ```
+   (This exact schema is also documented in `backend/app/session_store.py`'s docstring.)
+2. Report back once done so the agent can verify the table is reachable before starting the server.
+3. Local testing (TASK-014+) cannot proceed until this exists.
 
-**Next session goal:** Local testing (TASK-014 through TASK-019)
-1. Install dependencies (`pip install -r requirements.txt`)
-2. Start server (`uvicorn app.main:app --reload --port 8000`)
-3. Verify `/health` endpoint
-4. Register Telegram webhook via ngrok
-5. End-to-end Telegram test
+**DECIDED — Phase 2 (Future), not started (TASK-022 through TASK-025):**
+- Car model → lamp size compatibility database. Start with a small example dataset (~5-10 models)
+  from DA AUTOLIGHT staff, not the full catalogue. Until this exists, Phase 1's bot keeps asking
+  the customer directly for their lamp size and hands off if they don't know. See
+  `.specs/01_foundation/tasks.md` for the full breakdown.
+
+**AUDYA STILL NEEDS TO:**
+1. Receive `backend/.env` from Calvin (already sent, per Calvin — Audya should confirm receipt).
+2. Complete her own Python 3.11+ + venv setup on her machine, then report back.
+
+**Next session goal (once the Supabase table exists):** Local testing (TASK-014 through TASK-019)
+1. Start server (`uvicorn app.main:app --reload --port 8000`)
+2. Verify `/health` endpoint
+3. Start ngrok, register Telegram webhook
+4. End-to-end Telegram test
 
 Full task checklist: `.specs/01_foundation/tasks.md`
 

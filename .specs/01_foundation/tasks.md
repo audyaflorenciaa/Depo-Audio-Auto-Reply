@@ -117,6 +117,11 @@
 
 ## Phase 1I — Local Testing
 
+- [ ] **TASK-013b:** Create the `sessions` table in Supabase (SQL Editor). Schema is documented
+  in `backend/app/session_store.py`'s docstring, and also in `README.md` / `CHANGELOG.md`
+  (Session 8). **Blocker for all tasks below** — decided by Calvin (2026-09-21) to defer this to
+  a later session, not done today.
+
 - [ ] **TASK-014:** Install dependencies: `pip install -r requirements.txt`
 
 - [ ] **TASK-015:** Create `.env` from `.env.example` and fill in real values.
@@ -172,3 +177,34 @@ The foundation is complete when:
 - [ ] The bot never invents prices not in `product_data.md`.
 - [ ] A handoff log file is written on any handoff trigger.
 - [ ] All tests in `tests/` pass.
+
+---
+
+## Phase 2 (Future) — Car Model → Lamp Size Compatibility Database
+
+> **Status: PLANNED, NOT STARTED.** Decided by Calvin (2026-09-21): this is the chosen direction
+> (Option B — a real compatibility lookup) over the simpler "always ask the customer" fallback.
+> Do not build this until Phase 1 (local testing + basic conversation flow) is fully working.
+> Until this exists, Phase 1's bot should ask the customer for their lamp size directly and
+> hand off to a human staff member if the customer doesn't know it — this remains the Phase 1
+> behavior in the meantime.
+
+- [ ] **TASK-022:** Collect a small starter dataset (not the full catalogue) of car model → lamp
+  size mappings from DA AUTOLIGHT staff, e.g.:
+  ```
+  Toyota Avanza (all years)   -> Foglamp 3 inch
+  Honda Brio                  -> Foglamp 2 inch
+  ```
+  Start with ~5-10 common models seen in the shop, not an exhaustive list. This requires input
+  from staff who know the actual installs — the agent cannot invent this data.
+
+- [ ] **TASK-023:** Decide where this data lives (likely a new file, e.g.
+  `backend/app/data/car_compatibility.md` or a Supabase table, similar pattern to `sessions`) —
+  to be designed once the starter dataset exists and its shape is known.
+
+- [ ] **TASK-024:** Update `state_machine.py` / `system_prompt.md` so the bot checks this data
+  first; if the customer's car IS found, recommend the matching size; if NOT found, fall back to
+  asking the customer directly, and hand off if they don't know — same safety behavior as Phase 1.
+
+- [ ] **TASK-025:** Expand the dataset over time as staff provide more car models. This is
+  expected to grow gradually, not be complete on day one.

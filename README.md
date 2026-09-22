@@ -56,6 +56,7 @@ Depo Audio Auto-Reply/
 | 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files.                                             |
 | 2026-09-19 | **Session 4 & 5 (Audya):** Filled in `.env.example` with Supabase template, then wrote ALL Phase 1 backend Python code (`config.py`, `session_store.py`, `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, product data). TASK-001–013 done. |
 | 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                   |
+| 2026-09-21 | **Session 8 (Calvin):** Fixed venv missing `supabase` package and wrong `SUPABASE_URL` format. Discovered the Supabase `sessions` table doesn't exist yet — logged as TASK-013b, intentionally deferred (not run today). Decided to build a car-model-to-lamp-size compatibility database as a Phase 2 (Future) task (TASK-022–025), starting with a small example dataset from staff.                                            |
 
 ---
 
@@ -87,8 +88,8 @@ antara Calvin & Audya jadi tidak sinkron (dua bot berbeda, harga/respons bisa be
 
 | Step | What to do                                                             | Calvin                                                        | Audya           |
 | ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------- | --------------- |
-| 1    | Verify Python 3.11+ installed (`py -0p`)                             | ✅ Done (Python 3.12.4, confirmed by Calvin)                  | ⬜ Not done yet |
-| 5    | Create venv +`pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv recreated with Python 3.12, all deps installed) | ⬜ Not done yet |
+| 1    | Verify Python 3.11+ installed (`py -0p`)                             | ✅ Done (Python 3.12.4, verified live in a session)                  | ⬜ Not done yet |
+| 5    | Create venv +`pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv verified live: all deps incl. `supabase` installed, `.env` loads correctly, Supabase connection succeeds) | ⬜ Not done yet |
 
 > **How to update this table:** whoever finishes a step tells the agent in their prompt
 > (e.g. "Ini Audya, saya sudah selesai Step 1 dan 5"), and the agent flips `⬜ Not done yet`
@@ -208,12 +209,41 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 
 **Tahap 2 sudah selesai:** Audya sudah menulis semua kode Python Phase 1 (TASK-001–013) — `config.py`, `session_store.py` (pakai Supabase, bukan in-memory dict), `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, dan product data.
 
-**Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Yang perlu dilakukan:
+**Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Status sesi terakhir:
 
-1. **Calvin** kirim file `backend/.env` yang sudah terisi ke Audya secara offline (chat pribadi, bukan git).
-2. **Audya** taruh file itu di `backend/.env` di laptopnya, lalu selesaikan Step 1 & 5 (Python + venv) sendiri — lihat checklist di atas.
-3. Buat project Supabase + tabel `sessions` (schema ada di `backend/app/session_store.py` dan `backend/app/supabase_client.py`) — ini kebutuhan baru yang tidak ada di rencana awal (awalnya sesi disimpan in-memory, Audya mengubahnya ke Supabase). Tambahkan `SUPABASE_URL` dan key-nya ke `.env` yang di-share.
-4. Jalankan server, test lewat ngrok + Telegram end-to-end.
+1. ✅ Calvin sudah kirim `backend/.env` ke Audya secara offline.
+2. ✅ Calvin's venv & `.env` sudah diverifikasi jalan (termasuk fix: package `supabase` yang sempat
+   belum terinstall, dan format `SUPABASE_URL` yang salah — sudah dibetulkan).
+3. ⬜ **BLOCKER — sengaja ditunda, belum dikerjakan hari ini (TASK-013b):** tabel `sessions` di
+   Supabase **belum dibuat**. Project Supabase-nya sudah ada dan kredensialnya valid, tapi
+   tabelnya kosong. Calvin akan menjalankan SQL ini di sesi berikutnya, di Supabase Dashboard
+   (https://app.supabase.com/) → SQL Editor → New Query → Run:
+   ```sql
+   CREATE TABLE sessions (
+       chat_id       BIGINT PRIMARY KEY,
+       state         TEXT NOT NULL DEFAULT 'S0',
+       car_brand     TEXT,
+       car_model     TEXT,
+       car_year      INTEGER,
+       goal          TEXT,
+       handoff       BOOLEAN NOT NULL DEFAULT FALSE,
+       handoff_reason TEXT,
+       message_history JSONB NOT NULL DEFAULT '[]'::jsonb,
+       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   );
+   ```
+4. ⬜ Audya belum lapor sudah setup Python + venv di laptopnya sendiri.
+5. ⬜ Setelah tabel Supabase ada, jalankan server (`uvicorn`), test lewat ngrok + Telegram end-to-end.
+
+> **Keputusan produk (SUDAH DIPUTUSKAN oleh Calvin, 2026-09-21):** bot saat ini TIDAK punya data
+> "mobil X butuh ukuran lampu berapa" — `product_data.md` hanya berisi harga per ukuran inci,
+> bukan per model mobil. **Arah yang dipilih: bangun database kompatibilitas mobil→ukuran**
+> (bukan sekadar tanya-jawab manual selamanya), tapi ini masuk **Phase 2 (Future)** —
+> TASK-022 s/d TASK-025 di `.specs/01_foundation/tasks.md`, dimulai dari contoh data kecil
+> (~5-10 model mobil) dari staff DA AUTOLIGHT, bukan katalog lengkap sekaligus. Sampai data itu
+> ada, bot Phase 1 tetap tanya langsung ke customer dan handoff kalau customer tidak tahu
+> ukurannya — perilaku ini TIDAK berubah untuk sekarang.
 
 ## 💬 Prompt Harian Anda (Pakai Ini Setiap Mulai Sesi Baru — SELAMANYA, Tidak Perlu Diubah)
 
