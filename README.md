@@ -49,14 +49,17 @@ Depo Audio Auto-Reply/
 
 ## 📅 Changelog (Agent Sessions)
 
-| Date       | Session Summary                                                                                                                                                                                                                                                                                                                             |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/)                                                                                                                                                                                                                                          |
-| 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths.                                                                                                                              |
-| 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files.                                             |
-| 2026-09-19 | **Session 4 & 5 (Audya):** Filled in `.env.example` with Supabase template, then wrote ALL Phase 1 backend Python code (`config.py`, `session_store.py`, `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, product data). TASK-001–013 done. |
-| 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                   |
-| 2026-09-21 | **Session 8 (Calvin):** Fixed venv missing `supabase` package and wrong `SUPABASE_URL` format. Discovered the Supabase `sessions` table doesn't exist yet — logged as TASK-013b, intentionally deferred (not run today). Decided to build a car-model-to-lamp-size compatibility database as a Phase 2 (Future) task (TASK-022–025), starting with a small example dataset from staff.                                            |
+| Date       | Session Summary                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-16 | **Session 1:** Generated all foundation `.md` files (README, .env.example, docs/, .specs/)                                                                                                                                                                                                                                                                                                   |
+| 2026-09-16 | **Session 2:** Restructured to monorepo. Created `backend/`, `frontend/`, `database/` skeleton. Added WhatsApp RAG Phase 2 rules to `tech_stack.md`. Updated `design.md` to reflect new paths.                                                                                                                                                                                       |
+| 2026-09-18 | **Session 3:** Consolidated multiple specification and documentation files (`design.md`, `requirements.md`, `bot_flow.md`, `product_data.md`, `tech_stack.md`) into a single master context file (`docs/PROJECT_CONTEXT.md`) to save AI token usage. Removed redundant files.                                                                                                      |
+| 2026-09-19 | **Session 4 & 5 (Audya):** Filled in `.env.example` with Supabase template, then wrote ALL Phase 1 backend Python code (`config.py`, `session_store.py`, `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, product data). TASK-001–013 done.                                                          |
+| 2026-09-21 | **Session 6 (Calvin):** Fixed `pip install` failure — `backend/.venv` was built with Python 3.7 (too old for FastAPI 0.111.0). Recreated venv with Python 3.12. All dependencies installed successfully. Added multi-developer workflow rules.                                                                                                                                            |
+| 2026-09-21 | **Session 8 (Calvin):** Fixed venv missing `supabase` package and wrong `SUPABASE_URL` format. Discovered the Supabase `sessions` table doesn't exist yet — logged as TASK-013b, intentionally deferred (not run today). Decided to build a car-model-to-lamp-size compatibility database as a Phase 2 (Future) task (TASK-022–025), starting with a small example dataset from staff. |
+| 2026-09-21 | **Session 9 (Calvin):** Created the `sessions` table in Supabase. Verified server starts cleanly and `/health` returns OK. ngrok is not installed yet — that's now the blocker for webhook testing (TASK-017–019).                                                                                                                                                                       |
+| 2026-09-21 | **Session 10 (Calvin):** Installed `ngrok.exe` via winget. Clarified that ngrok (and its account/authtoken) is per-machine/per-person, unlike the shared Telegram/Gemini/Supabase credentials. Authtoken not yet added — needs Calvin's browser sign-up. |
+| 2026-09-21 | **Session 11 (Calvin):** Fixed a corrupted ngrok config file, a truncated authtoken paste, and an outdated ngrok binary (`ngrok update` fixed it). ngrok tunnel verified working end-to-end for Calvin. Step 6 now fully done for Calvin. |
 
 ---
 
@@ -86,10 +89,11 @@ antara Calvin & Audya jadi tidak sinkron (dua bot berbeda, harga/respons bisa be
 > supaya tidak menumpuk — tapi tetap tercatat permanen di `CHANGELOG.md` siapa yang menyelesaikan
 > apa dan kapan.
 
-| Step | What to do                                                             | Calvin                                                        | Audya           |
-| ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------- | --------------- |
-| 1    | Verify Python 3.11+ installed (`py -0p`)                             | ✅ Done (Python 3.12.4, verified live in a session)                  | ⬜ Not done yet |
-| 5    | Create venv +`pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv verified live: all deps incl. `supabase` installed, `.env` loads correctly, Supabase connection succeeds) | ⬜ Not done yet |
+| Step | What to do                                                             | Calvin                                                                                                                     | Audya           |
+| ---- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| 1    | Verify Python 3.11+ installed (`py -0p`)                             | ✅ Done (Python 3.12.4, verified live in a session)                                                                        | ⬜ Not done yet |
+| 5    | Create venv +`pip install -r requirements.txt` (inside `backend/`) | ✅ Done (venv verified live: all deps incl.`supabase` installed, `.env` loads correctly, Supabase connection succeeds) | ⬜ Not done yet |
+| 6    | Install ngrok + add YOUR OWN authtoken (see below)                   | ✅ Done (installed via winget, auto-updated to v3.39.11, authtoken registered, tunnel verified live)                    | ⬜ Not done yet |
 
 > **How to update this table:** whoever finishes a step tells the agent in their prompt
 > (e.g. "Ini Audya, saya sudah selesai Step 1 dan 5"), and the agent flips `⬜ Not done yet`
@@ -123,20 +127,55 @@ cd backend
 
 ---
 
-### 🌐 Additional per-machine setup
-
 #### STEP 6 — Install ngrok (for local testing)
+
+> ⚠️ **Ini WAJIB per-laptop, bukan shared seperti Telegram/Gemini/Supabase.** ngrok cuma jembatan
+> teknis dari `localhost` DI LAPTOP ANDA ke internet — tidak bisa dipakai laptop lain. Setiap
+> developer yang mau menjalankan server & test webhook Telegram di laptopnya sendiri WAJIB
+> install ngrok dan authtoken sendiri di laptop itu.
+>
+> **Soal akun ngrok:** sebaiknya Calvin dan Audya masing-masing bikin akun ngrok sendiri (gratis,
+> cepat) dengan authtoken masing-masing — bukan berbagi 1 akun. Akun free tier ngrok biasanya
+> hanya boleh 1 tunnel aktif bersamaan; kalau dua orang pakai akun yang sama dan testing di waktu
+> yang sama, akan konflik/salah satu ke-disconnect.
 
 ngrok creates a public HTTPS tunnel to your local machine so Telegram can reach it.
 
-1. Go to: **https://ngrok.com/download**
-2. Download for Windows → extract `ngrok.exe` anywhere on your computer.
-3. Sign up for a free account at ngrok.com → copy your **authtoken**.
-4. Run once to register:
+1. **Install `ngrok.exe`** — dua cara, pilih salah satu:
+   - **Via winget (cepat, lewat terminal):**
+     ```powershell
+     winget install ngrok.ngrok --silent --accept-package-agreements --accept-source-agreements
+     ```
+     Setelah itu **buka terminal BARU** (PATH baru belum terbaca di terminal yang sedang terbuka).
+   - **Manual:** buka **https://ngrok.com/download** → download untuk Windows → extract `ngrok.exe`.
 
-```powershell
-ngrok config add-authtoken <your-authtoken>
-```
+2. **Sign up akun ngrok Anda sendiri** (bukan pakai akun orang lain):
+   https://dashboard.ngrok.com/signup
+
+3. **Copy authtoken Anda** dari: https://dashboard.ngrok.com/get-started/your-authtoken — klik
+   tombol **Copy** di dashboard, jangan select-manual dengan mouse (rawan kepotong sebagian).
+
+4. **Daftarkan authtoken itu** (jalankan di terminal BARU, supaya command `ngrok` sudah terbaca):
+   ```powershell
+   ngrok config add-authtoken <your-authtoken>
+   ```
+
+5. **Update ke versi terbaru** — akun ngrok modern butuh agent versi cukup baru (minimal ~3.20+).
+   Kalau baru install lewat winget, versinya bisa jadi sudah usang. Jalankan:
+   ```powershell
+   ngrok update
+   ```
+   Kalau muncul error `ERR_NGROK_121` ("agent version too old") saat `ngrok http`, ini solusinya.
+
+> ⚠️ **Troubleshooting yang mungkin ditemui (sudah pernah terjadi di sesi Calvin):**
+> - **`unknown version '3'. valid versions are: [1 2]`** — file config lama (`%LOCALAPPDATA%\ngrok\ngrok.yml`)
+>   rusak/tidak kompatibel. Hapus file itu, lalu jalankan ulang `ngrok config add-authtoken`.
+> - **`ERR_NGROK_105` ("does not look like a proper authtoken")** — token yang di-paste
+>   terpotong. Copy ulang dari dashboard pakai tombol Copy, pastikan utuh.
+> - **`ERR_NGROK_121` ("agent version too old")** — jalankan `ngrok update`.
+> - **JANGAN kirim/tempel authtoken Anda di tempat yang tidak aman (termasuk chat AI manapun).**
+>   Kalau tidak sengaja terekspos, langsung **rotate/regenerate** di dashboard ngrok sebelum
+>   dipakai — token lama otomatis tidak berlaku lagi begitu di-rotate.
 
 ---
 
@@ -155,28 +194,33 @@ This does NOT need to be done now. When Phase 2 begins, you will need to export 
 
 ## 🚀 Running the Bot
 
-> Phase 1 Python code is DONE (TASK-001–013). Next step is local testing (TASK-014–019) — see below.
-> You still need: (a) Python + venv set up on YOUR machine (Steps 1 & 5), (b) the shared `backend/.env`
-> file received from Calvin and placed in your `backend/` folder, (c) a Supabase project with the
-> `sessions` table created (Audya added Supabase as the session store — see
-> `backend/app/supabase_client.py` and `backend/app/session_store.py` for the required schema).
+> Phase 1 Python code is DONE (TASK-001–013). Prerequisites for local testing: (a) Python + venv
+> set up on YOUR machine (Steps 1 & 5), (b) the shared `backend/.env` file received from Calvin
+> and placed in your `backend/` folder, (c) the Supabase `sessions` table (already created —
+> see `backend/app/session_store.py` for schema), (d) ngrok installed + authtoken registered
+> (Step 6, YOUR OWN account).
 
+**Terminal 1 — start the server:**
 ```powershell
 # From the backend/ folder with .venv active:
 uvicorn app.main:app --reload --port 8000
 ```
 
-In a second terminal:
-
+**Terminal 2 — start the ngrok tunnel (while the server from Terminal 1 is still running):**
 ```powershell
 ngrok http 8000
 ```
+Copy the `https://....ngrok-free.dev` (or similar) URL it prints out.
 
-Copy the ngrok HTTPS URL, then register the Telegram webhook:
+> ⚠️ On ngrok's free tier this URL is **random and changes every time you restart the tunnel** —
+> you must re-register the webhook (below) with the new URL each time you restart ngrok.
 
+**Register the Telegram webhook with that URL:**
 ```
 https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<NGROK_URL>/webhook/<WEBHOOK_SECRET_PATH>
 ```
+Paste that full URL (with your real token/ngrok URL/secret filled in) into a browser, or run it
+with `curl`/`Invoke-RestMethod`. A successful response looks like `{"ok":true,"result":true,...}`.
 
 ---
 
@@ -212,29 +256,24 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 **Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Status sesi terakhir:
 
 1. ✅ Calvin sudah kirim `backend/.env` ke Audya secara offline.
-2. ✅ Calvin's venv & `.env` sudah diverifikasi jalan (termasuk fix: package `supabase` yang sempat
-   belum terinstall, dan format `SUPABASE_URL` yang salah — sudah dibetulkan).
-3. ⬜ **BLOCKER — sengaja ditunda, belum dikerjakan hari ini (TASK-013b):** tabel `sessions` di
-   Supabase **belum dibuat**. Project Supabase-nya sudah ada dan kredensialnya valid, tapi
-   tabelnya kosong. Calvin akan menjalankan SQL ini di sesi berikutnya, di Supabase Dashboard
-   (https://app.supabase.com/) → SQL Editor → New Query → Run:
-   ```sql
-   CREATE TABLE sessions (
-       chat_id       BIGINT PRIMARY KEY,
-       state         TEXT NOT NULL DEFAULT 'S0',
-       car_brand     TEXT,
-       car_model     TEXT,
-       car_year      INTEGER,
-       goal          TEXT,
-       handoff       BOOLEAN NOT NULL DEFAULT FALSE,
-       handoff_reason TEXT,
-       message_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-   );
-   ```
-4. ⬜ Audya belum lapor sudah setup Python + venv di laptopnya sendiri.
-5. ⬜ Setelah tabel Supabase ada, jalankan server (`uvicorn`), test lewat ngrok + Telegram end-to-end.
+2. ✅ Calvin's venv & `.env` sudah diverifikasi jalan.
+3. ✅ Tabel `sessions` di Supabase **sudah dibuat** (Calvin, via SQL Editor) dan sudah diverifikasi
+   bisa diakses dari kode.
+4. ✅ Server (`uvicorn`) sudah diverifikasi jalan tanpa error, `/health` mengembalikan
+   `{"status": "ok", "version": "0.1.0"}`.
+5. ✅ ngrok **selesai untuk Calvin**: terinstall (winget), authtoken terdaftar, auto-updated ke
+   v3.39.11 (versi lama winget terlalu usang untuk akun ngrok modern), tunnel sudah diverifikasi
+   jalan (dapat URL publik seperti `https://xxxxx.ngrok-free.dev`).
+6. ⬜ **BLOCKER SEKARANG:** belum ada test end-to-end nyata — tunnel yang diverifikasi kemarin
+   cuma tes konektivitas (server belum jalan bersamaan). Selanjutnya: jalankan `uvicorn` DAN
+   `ngrok http 8000` bersamaan (2 terminal), lalu register webhook Telegram (TASK-018), baru test
+   percakapan asli di Telegram (TASK-019).
+7. ⬜ Audya belum lapor sudah setup Python + venv + ngrok (dengan authtoken-nya SENDIRI, bukan
+   pakai punya Calvin) di laptopnya sendiri.
+
+> **Catatan URL ngrok:** di free tier, URL publik ngrok **berubah acak setiap kali tunnel di-restart**
+> (kecuali upgrade ke paid plan dengan reserved domain). Jadi tiap kali mulai sesi testing baru,
+> webhook Telegram harus di-register ULANG dengan URL yang baru — lihat TASK-018.
 
 > **Keputusan produk (SUDAH DIPUTUSKAN oleh Calvin, 2026-09-21):** bot saat ini TIDAK punya data
 > "mobil X butuh ukuran lampu berapa" — `product_data.md` hanya berisi harga per ukuran inci,

@@ -20,6 +20,109 @@
 
 ---
 
+### 2026-09-21 — Session 11 (ngrok authtoken fixed, tunnel verified working) — by Calvin
+
+**What was done:**
+- **Security note:** Calvin's first authtoken was pasted into chat, so the agent advised rotating
+  it immediately (regenerate in the ngrok dashboard). Calvin did this before providing the new one.
+- First attempt to run `ngrok config add-authtoken` failed with `ERROR: unknown version '3'.
+  valid versions are: [1 2]` — a leftover/corrupted `ngrok.yml` config file (likely from a prior
+  ngrok install attempt) had an incompatible config schema version. Fixed by deleting
+  `%LOCALAPPDATA%\ngrok\ngrok.yml` and letting ngrok regenerate it fresh.
+- Second authtoken provided by Calvin turned out to be truncated (copy-paste issue, missing the
+  tail end of the token) — ngrok rejected it with `ERR_NGROK_105` ("does not look like a proper
+  authtoken"). Calvin re-copied the FULL token from the dashboard and it was accepted.
+- After the authtoken was accepted, `ngrok http 8000` still failed with `ERR_NGROK_121`: the
+  winget-installed ngrok binary (v3.3.1) was too old — Calvin's ngrok account requires agent
+  version 3.20.0+. Fixed by running `ngrok update`, which auto-updated the binary to v3.39.11.
+- Verified live: `ngrok http 8000` successfully started a tunnel and printed a public HTTPS URL
+  (`https://nonrotating-telaesthetic-jayceon.ngrok-free.dev` — NOTE: ngrok free tier URLs are
+  RANDOM and change every time the tunnel restarts, unless on a paid plan with a reserved domain).
+  Tunnel was stopped immediately after since no server was running on port 8000 yet — this was
+  purely a connectivity/auth test, not a real webhook test.
+- TASK-017 (start ngrok, get a working tunnel) is now functionally proven to work end-to-end.
+  Registering the Telegram webhook (TASK-018) and the full conversation test (TASK-019) are next.
+
+**Files Created/Modified:**
+- (local machine only, no repo files changed by the fixes themselves): `%LOCALAPPDATA%\ngrok\ngrok.yml`
+  recreated with a valid authtoken.
+- `CHANGELOG.md` <- MODIFIED (this entry)
+
+**README Human Steps Status:**
+- Step 6 (ngrok) — ✅ Done for Calvin: installed, updated to a compatible version, authtoken
+  registered, tunnel verified working live. Not started for Audya.
+
+---
+
+### 2026-09-21 — Session 10 (ngrok installed, clarified per-machine vs shared) — by Calvin
+
+**What was done:**
+- Re-confirmed via live terminal check (`Get-Command ngrok`) that ngrok was still NOT installed,
+  consistent with Session 9's finding — no contradiction found during Session Start Protocol.
+- Installed `ngrok.exe` (v3.3.1) via `winget install ngrok.ngrok`. Verified the binary works by
+  running `ngrok version` directly (using its full winget install path, since the current shell's
+  PATH hadn't picked up the change yet — winget itself warned this requires a new terminal).
+- Clarified and documented an important distinction the human asked about: **ngrok is per-machine
+  setup, not shared like Telegram/Gemini/Supabase credentials.** Even though ngrok involves an
+  account and an authtoken (which might look "shared-secret-like"), it cannot actually be shared
+  usefully between developers — a tunnel only exposes `localhost` on the ONE machine it runs on.
+  Recommended each developer create their OWN ngrok account/authtoken (free tier typically allows
+  only one active tunnel at a time, so sharing one account risks conflicts if both test at once).
+  Added this as an explicit rule in `.agents/rules/GEMINI.md` (Rule 7.2b) so future agent sessions
+  (including Audya's) categorize it correctly without re-asking.
+- Guided Calvin through the remaining manual steps (browser sign-up for an authtoken) — could not
+  be automated. Waiting on Calvin to complete `ngrok config add-authtoken <token>` before TASK-017
+  (start the tunnel) can proceed.
+
+**Files Created/Modified:**
+- `.agents/rules/GEMINI.md` <- MODIFIED (Rule 7.2b: documented ngrok as per-machine, not shared)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+- `README.md` <- MODIFIED (Step 6 now includes a winget install option, explicit per-machine/
+  per-account warning, and added a Step 6 row to the per-developer checklist table)
+
+**README Human Steps Status:**
+- Shared setup (Telegram token, Gemini key, Supabase URL/key in `.env`) — ✅ Done.
+- Per-machine setup (Python 3.11+, venv) — ✅ Done for Calvin. ⬜ Not done/reported by Audya.
+- Supabase `sessions` table — ✅ Done, verified live.
+- Step 6 (ngrok) — ⬜ Partially done for Calvin: `ngrok.exe` installed and verified working via
+  terminal, but authtoken NOT yet added (requires Calvin's browser sign-up — pending). Not started
+  for Audya.
+
+---
+
+### 2026-09-21 — Session 9 (Supabase table created, server verified locally) — by Calvin
+
+**What was done:**
+- Ran the SQL Session Start Protocol found: Calvin executed `CREATE TABLE sessions (...)` in the
+  Supabase SQL Editor (with RLS off — fine since the backend uses `SUPABASE_SERVICE_KEY`, which
+  bypasses RLS regardless). Verified live from the terminal: the table is now reachable via
+  `supabase.table('sessions').select('*')`, returns 0 rows (expected, empty table). TASK-013b done.
+- Ran `uvicorn app.main:app --reload --port 8000` — server started cleanly, no errors. Startup
+  log confirmed Supabase URL, Gemini model, and webhook secret path all loaded correctly from
+  `.env`. TASK-014 through TASK-016 confirmed done on Calvin's machine.
+- Checked `GET /health` — returned `{"status": "ok", "version": "0.1.0"}` as specified.
+- Checked for `ngrok` on Calvin's machine — NOT installed yet (`ngrok` command not found).
+  TASK-017/018 (ngrok tunnel + webhook registration) cannot proceed until Calvin installs it
+  (README Step 6 — manual step, requires browser sign-up, cannot be automated). Server was
+  stopped after the `/health` check to avoid leaving it running unnecessarily.
+
+**Files Created/Modified:**
+- `.specs/01_foundation/tasks.md` <- MODIFIED (TASK-013b, TASK-014, TASK-015, TASK-016 marked done)
+- `CHANGELOG.md` <- MODIFIED (this entry)
+- `README.md` <- MODIFIED (updated current stage: Supabase table done, server verified, ngrok is
+  now the next blocker)
+
+**README Human Steps Status:**
+- Shared setup (Telegram token, Gemini key, Supabase URL/key in `.env`) — ✅ Done.
+- Per-machine setup (Python 3.11+, venv) — ✅ Done for Calvin (re-verified this session via a live
+  server run). ⬜ Still not done/reported by Audya.
+- Supabase `sessions` table — ✅ Done, verified live this session.
+- Step 6 (ngrok) — ⬜ NOT installed on Calvin's machine yet — confirmed via `Get-Command ngrok`,
+  not an assumption. This is now the blocker for TASK-017/018/019 (webhook registration + full
+  end-to-end Telegram test).
+
+---
+
 ### 2026-09-21 — Session 8 (Fix venv missing `supabase`, wrong SUPABASE_URL, discovered `sessions` table missing) — by Calvin
 
 **What was done:**
@@ -288,29 +391,16 @@ leave it as unverified rather than assume.
 > *(Updated each session — the agent current game plan)*
 
 **All Phase 1 Python code has been written (TASK-001 through TASK-013). ✅**
-**Calvin's local environment is verified working (venv, `.env`, Supabase connection). ✅**
+**Calvin's local environment is fully verified: venv, `.env`, Supabase table, server startup, `/health`. ✅**
 
-**BLOCKER (deferred by Calvin, not done today — TASK-013b):**
-1. Open Supabase Dashboard (https://app.supabase.com/) → the project with URL
-   `stnwwfjlalhurvvqoqwo.supabase.co` → **SQL Editor** → New Query → run:
-   ```sql
-   CREATE TABLE sessions (
-       chat_id       BIGINT PRIMARY KEY,
-       state         TEXT NOT NULL DEFAULT 'S0',
-       car_brand     TEXT,
-       car_model     TEXT,
-       car_year      INTEGER,
-       goal          TEXT,
-       handoff       BOOLEAN NOT NULL DEFAULT FALSE,
-       handoff_reason TEXT,
-       message_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-   );
-   ```
-   (This exact schema is also documented in `backend/app/session_store.py`'s docstring.)
-2. Report back once done so the agent can verify the table is reachable before starting the server.
-3. Local testing (TASK-014+) cannot proceed until this exists.
+**BLOCKER NOW (Calvin must do before continuing local testing):**
+1. `ngrok.exe` is installed (via winget). Still need: sign up at
+   https://dashboard.ngrok.com/signup, get authtoken from
+   https://dashboard.ngrok.com/get-started/your-authtoken, then in a NEW terminal run
+   `ngrok config add-authtoken <token>`. This is a manual step (browser sign-up) the agent cannot
+   do for you.
+2. Report back once done. Next steps after that: start `uvicorn`, start `ngrok http 8000`,
+   register the Telegram webhook (TASK-018), then run the full end-to-end Telegram test (TASK-019).
 
 **DECIDED — Phase 2 (Future), not started (TASK-022 through TASK-025):**
 - Car model → lamp size compatibility database. Start with a small example dataset (~5-10 models)
@@ -322,11 +412,10 @@ leave it as unverified rather than assume.
 1. Receive `backend/.env` from Calvin (already sent, per Calvin — Audya should confirm receipt).
 2. Complete her own Python 3.11+ + venv setup on her machine, then report back.
 
-**Next session goal (once the Supabase table exists):** Local testing (TASK-014 through TASK-019)
+**Next session goal (once ngrok is installed):** Finish local testing (TASK-017 through TASK-019)
 1. Start server (`uvicorn app.main:app --reload --port 8000`)
-2. Verify `/health` endpoint
-3. Start ngrok, register Telegram webhook
-4. End-to-end Telegram test
+2. Start ngrok, register Telegram webhook
+3. End-to-end Telegram test (greeting → car info → goal → price → handoff)
 
 Full task checklist: `.specs/01_foundation/tasks.md`
 

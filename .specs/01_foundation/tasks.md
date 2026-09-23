@@ -117,17 +117,21 @@
 
 ## Phase 1I — Local Testing
 
-- [ ] **TASK-013b:** Create the `sessions` table in Supabase (SQL Editor). Schema is documented
+- [x] **TASK-013b:** Create the `sessions` table in Supabase (SQL Editor). Schema is documented
   in `backend/app/session_store.py`'s docstring, and also in `README.md` / `CHANGELOG.md`
-  (Session 8). **Blocker for all tasks below** — decided by Calvin (2026-09-21) to defer this to
-  a later session, not done today.
+  (Session 8). Done by Calvin on 2026-09-21 (ran with RLS off, using the service key which
+  bypasses RLS anyway — fine for backend access). Verified live: table is reachable, 0 rows.
 
-- [ ] **TASK-014:** Install dependencies: `pip install -r requirements.txt`
+- [x] **TASK-014:** Install dependencies: `pip install -r requirements.txt` (done for Calvin's
+  machine in Session 8; Audya still needs to do this on her own machine).
 
-- [ ] **TASK-015:** Create `.env` from `.env.example` and fill in real values.
+- [x] **TASK-015:** Create `.env` from `.env.example` and fill in real values. (Done for Calvin;
+  shared `.env` handed to Audya offline — she needs to place it in her `backend/` folder.)
 
-- [ ] **TASK-016:** Run the server: `uvicorn app.main:app --reload --port 8000`
-  - Confirm `/health` returns `{"status": "ok"}` in browser.
+- [x] **TASK-016:** Run the server: `uvicorn app.main:app --reload --port 8000`
+  - Confirmed `/health` returns `{"status": "ok", "version": "0.1.0"}`. Server started cleanly,
+    logged startup info showing Supabase URL and Gemini model loaded correctly. Verified live on
+    Calvin's machine, 2026-09-21.
 
 - [ ] **TASK-017:** Start ngrok: `ngrok http 8000`
   - Copy the HTTPS forwarding URL.

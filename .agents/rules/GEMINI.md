@@ -211,6 +211,14 @@ Not every setup item is per-developer. Split them correctly, in ANY phase of the
 - **Per-machine, done by EACH developer separately:** Python 3.11+ installation and creating
   their own local `.venv` + `pip install -r requirements.txt`. These cannot be shared because
   they depend on each person's own operating system and file paths.
+- **ngrok is ALSO per-machine** (a special case worth calling out): unlike Telegram/Gemini/
+  Supabase, ngrok holds no shared business secret — but it's still not shareable, because it
+  tunnels `localhost` on ONE specific machine to the internet. A tunnel started on Calvin's
+  laptop is useless for testing a server running on Audya's laptop. Each developer needs their
+  OWN ngrok installation AND their own ngrok account/authtoken (free tier accounts typically
+  allow only one active tunnel at a time — sharing one account between two people testing
+  simultaneously will cause conflicts/disconnects). Do not treat ngrok as a "shared secret" just
+  because it involves an account and a token — categorize it as per-machine setup.
 - If a human asks you to help a new developer get set up, tell them clearly which category each
   step falls into — do not tell a new developer to go make their own Telegram bot or Gemini key
   unless the team has explicitly decided to run separate bots for parallel testing.
