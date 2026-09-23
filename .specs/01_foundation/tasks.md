@@ -133,26 +133,63 @@
     logged startup info showing Supabase URL and Gemini model loaded correctly. Verified live on
     Calvin's machine, 2026-09-21.
 
-- [ ] **TASK-017:** Start ngrok: `ngrok http 8000`
-  - Copy the HTTPS forwarding URL.
+- [x] **TASK-017:** Start ngrok: `ngrok http 8000`
+  - Done and verified live, 2026-09-23 (Calvin). See Session 11/12 in CHANGELOG.md for the
+    troubleshooting history (corrupted config, truncated authtoken, outdated binary — all fixed).
+  - **IMPORTANT CAVEAT:** free-tier ngrok URLs are random per restart, so this step must be
+    repeated (and the webhook re-registered, TASK-018) every time the tunnel restarts.
 
-- [ ] **TASK-018:** Register Telegram webhook:
+- [x] **TASK-018:** Register Telegram webhook:
   ```
   https://api.telegram.org/bot{TOKEN}/setWebhook?url={NGROK_URL}/webhook/{SECRET_PATH}
   ```
-  - Confirm response: `{"ok": true}`
+  - Done, 2026-09-23 (Calvin). Response was `{"ok": true, "result": true, "description": "Webhook was set"}`.
+    Confirmed via `getWebhookInfo` too: correct URL, `pending_update_count: 0`, no last error — AT
+    THE TIME of registration. See TASK-019 below for what happened once real traffic flowed.
 
-- [ ] **TASK-019:** End-to-end test on Telegram.
-  - Open your bot in Telegram.
-  - Send `/start` or any message.
-  - Verify: bot replies with the official DA AUTOLIGHT greeting.
-  - Send: "Toyota Avanza 2020"
-  - Verify: bot acknowledges car and asks about goal.
-  - Send: "fungsi" (or "1")
-  - Verify: bot sends the Foglamp price list.
-  - Send: "mau booking"
-  - Verify: bot triggers handoff message.
-  - Check: `handoff_log/` directory contains a new `.json` file.
+- [x] **TASK-019:** End-to-end test on Telegram — PARTIALLY successful, with a significant issue found.
+  - Sent `/start` and "helo" — bot DID reply with the correct official DA AUTOLIGHT greeting and
+    correctly asked for car brand/year (content is correct, matches `system_prompt.md` script).
+  - **MAJOR ISSUE FOUND: extremely slow replies (26-90+ seconds), not the required <5s (NFR-01).**
+    Root cause identified: `GEMINI_API_KEY` in use is on the **Gemini free tier**, hard-limited to
+    **5 requests/minute per model**. During testing (multiple model switches + repeated test
+    calls), the key repeatedly hit `429 Quota exceeded ... limit: 5 ... retry in ~32s`, which is
+    why replies took so long — the SDK/API was silently backing off, not actually "thinking".
+    Confirmed by directly timing a raw `generate_content()` call outside the bot: single-word
+    reply took 26-46 seconds depending on model, and one call outright failed with 429.
+  - Also found (in the process of finding a working model): `gemini-1.5-flash` (the model
+    hardcoded in the original spec) is FULLY RETIRED by Google as of this session (2026-09-23) —
+    404 error, does not exist anymore. `gemini-2.5-flash` is ALSO already retired for new API
+    keys ("no longer available to new users"). The model that currently works with Calvin's key
+    is `gemini-3.6-flash` — but Google's own model lineup has moved far ahead of what this
+    project's spec assumed (originally scoped in ~2024 against Gemini 1.5). Changed
+    `backend/.env`'s `GEMINI_MODEL` to `gemini-3.6-flash`.
+  - Did NOT complete the full flow (car info → goal → price → handoff) because of the rate limit
+    making iteration too slow/expensive on the free tier. TASK-019 should be re-run properly once
+    the rate-limit problem is addressed (see "Known Issues" note below and README).
+  - `handoff_log/` was NOT verified this session as a result.
+
+## ⚠️ Known Issues / Blockers Carried Forward (as of 2026-09-23, Session 12)
+
+1. **Gemini free-tier rate limit (5 req/min) makes the bot unusable for real conversations.**
+   A real customer chat easily exceeds 5 messages in a minute once you count retries/multi-turn
+   flow. This MUST be addressed before Phase 1 can be considered done. Options discussed with
+   Calvin:
+   - Upgrade to a paid Gemini plan (straightforward, but has a real cost).
+   - **Explore alternative, more generous free-tier LLM providers — specifically Chinese models
+     (e.g. DeepSeek, Qwen, Moonshot/Kimi, GLM/Zhipu) were raised by Calvin as worth investigating**,
+     since some of these offer more generous free tiers or lower cost per token than Gemini.
+     NOT YET RESEARCHED OR DECIDED — this is a planning item for a future session, not started.
+   - If switching providers, `llm_client.py` would need rework (different SDK/API shape), and the
+     JSON-mode/structured-output guarantee that was Gemini's main selling point (see
+     `docs/PROJECT_CONTEXT.md` Decision 1) would need to be re-verified for whichever provider is
+     chosen — not all providers support strict JSON mode as cleanly as Gemini did.
+2. **Gemini model deprecation moves fast.** `gemini-1.5-flash` (original spec) and
+   `gemini-2.5-flash` (first fallback tried) are BOTH already retired as of 2026-09-23. Whatever
+   model is chosen going forward, expect to need to re-check availability periodically — this
+   is not a one-time fix.
+3. **ngrok free-tier URLs are random per restart** — every new local testing session needs the
+   webhook re-registered with the new URL (TASK-018 repeated).
 
 ---
 

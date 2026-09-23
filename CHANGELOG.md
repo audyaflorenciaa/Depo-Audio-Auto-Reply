@@ -20,6 +20,89 @@
 
 ---
 
+### 2026-09-23 — Session 13 (Full docs update: rate limit + deprecation findings, session wrap-up) — by Calvin
+
+**What was done:**
+- Consolidated all findings from Session 12 (see below) into `README.md`, `CHANGELOG.md`, and
+  `.specs/01_foundation/tasks.md` so both Calvin and Audya have a single clear record before
+  Calvin stops working for this session.
+- Verified README's per-machine checklist status is accurate for both developers: Calvin's Steps
+  1/5/6 remain ✅ (unchanged this session), Audya's remain ⬜ (still not reported by her). No
+  discrepancy found — this was double-checked at the human's explicit request.
+- Confirmed with Calvin: next planning direction is to **explore free/cheaper alternative LLM
+  providers, specifically Chinese models** (DeepSeek, Qwen, Kimi/Moonshot, GLM/Zhipu were named as
+  examples) as a way around Gemini's restrictive 5 req/min free tier. This is NOT decided or
+  started — purely a stated future direction, logged in tasks.md "Known Issues" section so it
+  isn't lost.
+
+**Files Created/Modified:**
+- `.specs/01_foundation/tasks.md` <- MODIFIED (TASK-017/018/019 marked done with detailed caveats;
+  added "Known Issues / Blockers Carried Forward" section documenting the rate limit problem,
+  Gemini model deprecation pattern, and the alternative-LLM exploration plan)
+- `CHANGELOG.md` <- MODIFIED (this entry + Session 12 below)
+- `README.md` <- MODIFIED (added a prominent "Known Issues" section, updated AI Engine section to
+  reflect Gemini 1.5 Flash is retired, noted future exploration of Chinese model alternatives)
+
+**README Human Steps Status:**
+- Shared setup — ✅ Done.
+- Per-machine setup (Calvin) — ✅ Done (Python, venv, ngrok all previously verified).
+- Per-machine setup (Audya) — ⬜ STILL not done/reported. Re-confirmed accurate this session, not
+  just carried over blindly.
+- Local server + Supabase — ✅ Done, working.
+- ngrok tunnel + webhook registration — ✅ Done, working (but URL is temporary/random, must repeat
+  next session).
+- **Full end-to-end conversation test — ⚠️ NOT completed** due to the Gemini rate limit issue
+  discovered this session. This is the main open item for the next session.
+
+---
+
+### 2026-09-23 — Session 12 (End-to-end test run: found Gemini model deprecation + rate limiting) — by Calvin
+
+**What was done:**
+- Ran the full local test stack together for the first time: `uvicorn` + `ngrok http 8000`
+  simultaneously, registered the Telegram webhook, and had Calvin send real messages from Telegram.
+- First real message (`/start`) triggered `Gemini API call failed: 404 models/gemini-1.5-flash is
+  not found`. Diagnosed: **`gemini-1.5-flash`, the exact model this project's spec was designed
+  around, is completely retired by Google as of this session's date.** Ran `genai.list_models()`
+  against Calvin's API key to see what's actually available — the list has moved on to Gemini
+  2.5/3.x generations entirely; nothing in the 1.5 family remains.
+- Tried `gemini-2.5-flash` as a same-tier replacement — also failed, with an even more telling
+  error: `404 ... no longer available to new users. Please update your code to use
+  models/gemini-3.6-flash`. Google's error message directly pointed to the replacement, so used it.
+- Set `GEMINI_MODEL=gemini-3.6-flash` in `backend/.env`. Confirmed this model works via a direct
+  isolated test call (bypassing the bot) — it returned successfully. Restarted `uvicorn` to pick
+  up the new `.env` value (note: `--reload` only watches `.py` files, NOT `.env` — a manual
+  restart is required after any `.env` change).
+- Retested from Telegram: bot now replies with CORRECT CONTENT (verified: the exact official
+  DA AUTOLIGHT greeting text, and the correct follow-up question asking for car brand/year) — so
+  the FSM logic, prompt engineering, and Telegram/Supabase integration are all confirmed working.
+  However, replies took 60-90+ seconds, triggering Telegram's own webhook read-timeout, which is
+  why the human initially saw "terjadi kesalahan sistem" fallback messages, and later saw delayed
+  replies arrive out of order.
+- Diagnosed the slowness: timed a raw, isolated `generate_content()` call outside the whole bot
+  stack — took 26 seconds for a ONE-WORD reply. Tried several other flash-family models to compare
+  and one attempt (`gemini-flash-latest`) failed outright with `429 Quota exceeded ... limit: 5
+  ... model: gemini-3.8-flash ... retry in 32s`. **Root cause: Calvin's Gemini API key is on the
+  free tier, hard-capped at 5 requests/minute per model.** All the back-and-forth model-switching
+  during troubleshooting (by both Calvin and the agent) ate into that quota repeatedly, compounding
+  the appearance of slowness — but the underlying limit (5/min) would make this unusable for a
+  real customer conversation regardless, since a normal chat easily needs more than 5 LLM calls
+  within a few minutes.
+- Did not complete the full TASK-019 flow (car info → goal → price → handoff) due to the rate
+  limit making further testing impractical this session. Stopped testing to avoid burning more
+  quota, and to bring the issue back to Calvin for a decision on how to proceed.
+- Cleaned up: stopped the `uvicorn` and `ngrok` background processes at the end of the session
+  (Calvin explicitly said they were done working for now).
+
+**Files Created/Modified:**
+- `backend/.env` <- MODIFIED (`GEMINI_MODEL` changed twice: `gemini-1.5-flash` → `gemini-2.5-flash`
+  → `gemini-3.6-flash`, the last one being the one that currently works)
+- `CHANGELOG.md` <- MODIFIED (this entry, written together with Session 13 above)
+
+**README Human Steps Status:** (see Session 13 above — combined into one accurate summary)
+
+---
+
 ### 2026-09-21 — Session 11 (ngrok authtoken fixed, tunnel verified working) — by Calvin
 
 **What was done:**
@@ -391,16 +474,28 @@ leave it as unverified rather than assume.
 > *(Updated each session — the agent current game plan)*
 
 **All Phase 1 Python code has been written (TASK-001 through TASK-013). ✅**
-**Calvin's local environment is fully verified: venv, `.env`, Supabase table, server startup, `/health`. ✅**
+**Calvin's local environment is fully verified end-to-end: venv, `.env`, Supabase, server, ngrok,
+Telegram webhook. Bot logic/content confirmed CORRECT (greeting + car question worked). ✅**
 
-**BLOCKER NOW (Calvin must do before continuing local testing):**
-1. `ngrok.exe` is installed (via winget). Still need: sign up at
-   https://dashboard.ngrok.com/signup, get authtoken from
-   https://dashboard.ngrok.com/get-started/your-authtoken, then in a NEW terminal run
-   `ngrok config add-authtoken <token>`. This is a manual step (browser sign-up) the agent cannot
-   do for you.
-2. Report back once done. Next steps after that: start `uvicorn`, start `ngrok http 8000`,
-   register the Telegram webhook (TASK-018), then run the full end-to-end Telegram test (TASK-019).
+**🔴 TOP PRIORITY BLOCKER — must be resolved before any more real testing:**
+**Gemini free-tier rate limit (5 requests/minute) makes the bot unusable for real conversations.**
+See `.specs/01_foundation/tasks.md` → "Known Issues" section for full details. Next session should
+start by deciding one of:
+1. Upgrade to a paid Gemini plan, OR
+2. **Research and possibly switch to a more generous alternative LLM provider — Calvin specifically
+   mentioned wanting to explore Chinese models (DeepSeek, Qwen, Kimi/Moonshot, GLM/Zhipu, etc.) for
+   their free tiers.** This has NOT been researched yet — no provider has been chosen, no code
+   changes have been made toward this. If pursued, expect to need to rework `llm_client.py`
+   (different SDK) and re-verify structured/JSON output support for whichever provider is picked.
+
+**ALSO CARRY FORWARD:**
+- `gemini-1.5-flash` (original spec's model) and `gemini-2.5-flash` (first fallback) are BOTH
+  fully retired by Google now. Currently using `gemini-3.6-flash` in `backend/.env` as a stopgap —
+  if switching LLM providers, this whole question becomes moot anyway.
+- TASK-019's full flow (car info → goal → price recommendation → handoff) was NOT completed —
+  only greeting + car-brand question were verified. Needs a full re-run once the rate limit issue
+  is resolved (whichever way that goes).
+- ngrok's free-tier URL is random per restart — re-register the webhook (TASK-018) every session.
 
 **DECIDED — Phase 2 (Future), not started (TASK-022 through TASK-025):**
 - Car model → lamp size compatibility database. Start with a small example dataset (~5-10 models)
@@ -410,12 +505,13 @@ leave it as unverified rather than assume.
 
 **AUDYA STILL NEEDS TO:**
 1. Receive `backend/.env` from Calvin (already sent, per Calvin — Audya should confirm receipt).
-2. Complete her own Python 3.11+ + venv setup on her machine, then report back.
+   NOTE: the `.env` she receives will need her to ALSO update `GEMINI_MODEL` if the model changes
+   again, or if the LLM provider changes entirely.
+2. Complete her own Python 3.11+ + venv + ngrok setup (with her OWN ngrok account) on her machine,
+   then report back.
 
-**Next session goal (once ngrok is installed):** Finish local testing (TASK-017 through TASK-019)
-1. Start server (`uvicorn app.main:app --reload --port 8000`)
-2. Start ngrok, register Telegram webhook
-3. End-to-end Telegram test (greeting → car info → goal → price → handoff)
+**Next session goal:** Resolve the LLM rate-limit/provider question FIRST, then re-run the full
+TASK-019 conversation flow test (car info → goal → price → handoff) before considering Phase 1 done.
 
 Full task checklist: `.specs/01_foundation/tasks.md`
 

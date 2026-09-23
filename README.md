@@ -60,6 +60,7 @@ Depo Audio Auto-Reply/
 | 2026-09-21 | **Session 9 (Calvin):** Created the `sessions` table in Supabase. Verified server starts cleanly and `/health` returns OK. ngrok is not installed yet — that's now the blocker for webhook testing (TASK-017–019).                                                                                                                                                                       |
 | 2026-09-21 | **Session 10 (Calvin):** Installed `ngrok.exe` via winget. Clarified that ngrok (and its account/authtoken) is per-machine/per-person, unlike the shared Telegram/Gemini/Supabase credentials. Authtoken not yet added — needs Calvin's browser sign-up. |
 | 2026-09-21 | **Session 11 (Calvin):** Fixed a corrupted ngrok config file, a truncated authtoken paste, and an outdated ngrok binary (`ngrok update` fixed it). ngrok tunnel verified working end-to-end for Calvin. Step 6 now fully done for Calvin. |
+| 2026-09-23 | **Session 12-13 (Calvin):** Ran the first real Telegram end-to-end test. Bot content/logic confirmed CORRECT, but found two serious issues: (1) `gemini-1.5-flash` AND `gemini-2.5-flash` are both retired by Google — now using `gemini-3.6-flash`. (2) Gemini free-tier key is rate-limited to 5 req/min, causing 60-90s reply delays — unusable for real conversations as-is. Full conversation flow test NOT completed. See "⚠️ Known Issues" section below. |
 
 ---
 
@@ -226,7 +227,14 @@ with `curl`/`Invoke-RestMethod`. A successful response looks like `{"ok":true,"r
 
 ## 🧠 AI Engine
 
-**Gemini 1.5 Flash** (chosen over Llama 3 / Groq)
+> ⚠️ **UPDATE (2026-09-23):** Model asli di bawah ini (Gemini 1.5 Flash) sudah **di-retire total
+> oleh Google** — tidak bisa dipakai lagi. Bahkan penggantinya (Gemini 2.5 Flash) juga sudah
+> di-retire untuk API key baru. Saat ini pakai `gemini-3.6-flash` (di `backend/.env`) sebagai
+> jalan sementara. **Perbandingan di tabel bawah ini sudah usang** — dibiarkan sebagai catatan
+> sejarah keputusan awal, bukan rekomendasi aktif. Lihat "⚠️ Known Issues" di bawah untuk rencana
+> ke depan (kemungkinan pindah provider LLM lain).
+
+**~~Gemini 1.5 Flash~~** (chosen over Llama 3 / Groq — keputusan ini sudah usang, lihat di atas)
 
 | Criteria               | Gemini 1.5 Flash   | Llama 3 (Groq)     |
 | ---------------------- | ------------------ | ------------------ |
@@ -236,7 +244,49 @@ with `curl`/`Invoke-RestMethod`. A successful response looks like `{"ok":true,"r
 | Future vision support  | Yes                | No                 |
 | **Verdict**      | **CHOSEN**   | —                 |
 
-Temperature: `0.1` — treats the model as a rule-follower, not a creative writer.
+Temperature: `0.1` — treats the model as a rule-follower, not a creative writer. (Ini masih relevan
+untuk model manapun yang dipakai — prinsip "jangan kreatif, ikuti aturan" tetap berlaku.)
+
+---
+
+## ⚠️ Known Issues (Wajib Dibaca Sebelum Lanjut Development)
+
+> Ditemukan 2026-09-23, sesi testing end-to-end pertama. Belum diselesaikan — ini yang harus
+> jadi prioritas sesi berikutnya, apapun yang mau dikerjakan Calvin atau Audya selanjutnya.
+
+### 1. 🔴 Gemini free tier rate limit — bot BELUM bisa dipakai untuk percakapan nyata
+
+API key Gemini yang dipakai sekarang **dibatasi 5 request per menit** (free tier). Satu
+percakapan customer normal butuh lebih dari 5 kali panggilan LLM dalam beberapa menit (tiap
+pesan customer = 1 panggilan Gemini). Begitu limit itu kena, Google membalas dengan `429 Quota
+exceeded` dan bot jadi lambat balas (26-90+ detik, bukan target <5 detik) atau bahkan gagal total.
+
+**Ini sudah dites dan dikonfirmasi langsung** — bukan asumsi. Lihat detail teknis lengkap di
+`.specs/01_foundation/tasks.md` bagian "Known Issues".
+
+**Rencana ke depan (belum diputuskan, belum dikerjakan):**
+- **Opsi A:** Upgrade ke Gemini paid tier (langsung, tapi ada biaya).
+- **Opsi B — sedang dipertimbangkan Calvin:** Eksplorasi model LLM alternatif yang free tier-nya
+  lebih generous, terutama **model dari China** (contoh: DeepSeek, Qwen/Alibaba, Kimi/Moonshot,
+  GLM/Zhipu). **Belum ada riset atau keputusan final** — ini baru arahan, belum dieksekusi.
+  Kalau nanti pindah provider, `backend/app/llm_client.py` perlu ditulis ulang (SDK beda), dan
+  kemampuan "structured JSON output" yang jadi alasan utama pilih Gemini dulu (lihat
+  `docs/PROJECT_CONTEXT.md` Decision 1) perlu dicek ulang — tidak semua provider punya JSON mode
+  seketat Gemini.
+
+### 2. Model Gemini terus di-deprecate — jangan hardcode asumsi model tertentu bertahan lama
+
+Dalam SATU sesi testing saja, ditemukan `gemini-1.5-flash` (model asli di spec) dan
+`gemini-2.5-flash` (percobaan pertama sebagai pengganti) **keduanya sudah di-retire Google**.
+Yang jalan sekarang: `gemini-3.6-flash`. Kalau ke depannya muncul error `404 ... is no longer
+available`, itu tandanya harus ganti model lagi — cek `genai.list_models()` untuk lihat pilihan
+yang tersedia saat itu.
+
+### 3. Testing percakapan penuh (TASK-019) belum selesai
+
+Baru diverifikasi: greeting + pertanyaan mobil/tahun (benar sesuai skrip). BELUM diverifikasi:
+alur goal (function/aesthetics) → rekomendasi harga → handoff. Perlu di-test ulang setelah
+masalah rate limit di atas selesai.
 
 ---
 
@@ -253,23 +303,21 @@ Temperature: `0.1` — treats the model as a rule-follower, not a creative write
 
 **Tahap 2 sudah selesai:** Audya sudah menulis semua kode Python Phase 1 (TASK-001–013) — `config.py`, `session_store.py` (pakai Supabase, bukan in-memory dict), `telegram_client.py`, `llm_client.py`, `handoff_logger.py`, `state_machine.py`, `webhook.py`, `main.py`, system prompt, dan product data.
 
-**Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Status sesi terakhir:
+**Kita sekarang masuk Tahap 3: Local Testing** (TASK-014–019). Status sesi terakhir (2026-09-23):
 
 1. ✅ Calvin sudah kirim `backend/.env` ke Audya secara offline.
-2. ✅ Calvin's venv & `.env` sudah diverifikasi jalan.
-3. ✅ Tabel `sessions` di Supabase **sudah dibuat** (Calvin, via SQL Editor) dan sudah diverifikasi
-   bisa diakses dari kode.
-4. ✅ Server (`uvicorn`) sudah diverifikasi jalan tanpa error, `/health` mengembalikan
-   `{"status": "ok", "version": "0.1.0"}`.
-5. ✅ ngrok **selesai untuk Calvin**: terinstall (winget), authtoken terdaftar, auto-updated ke
-   v3.39.11 (versi lama winget terlalu usang untuk akun ngrok modern), tunnel sudah diverifikasi
-   jalan (dapat URL publik seperti `https://xxxxx.ngrok-free.dev`).
-6. ⬜ **BLOCKER SEKARANG:** belum ada test end-to-end nyata — tunnel yang diverifikasi kemarin
-   cuma tes konektivitas (server belum jalan bersamaan). Selanjutnya: jalankan `uvicorn` DAN
-   `ngrok http 8000` bersamaan (2 terminal), lalu register webhook Telegram (TASK-018), baru test
-   percakapan asli di Telegram (TASK-019).
-7. ⬜ Audya belum lapor sudah setup Python + venv + ngrok (dengan authtoken-nya SENDIRI, bukan
-   pakai punya Calvin) di laptopnya sendiri.
+2. ✅ Calvin's venv, `.env`, Supabase table, server (`uvicorn`), dan ngrok tunnel — SEMUA sudah
+   diverifikasi jalan bersamaan, sampai webhook Telegram berhasil terdaftar.
+3. ✅ **Test nyata di Telegram sudah dilakukan** — bot membalas dengan konten yang BENAR (greeting
+   resmi DA AUTOLIGHT + pertanyaan mobil/tahun, sesuai skrip).
+4. 🔴 **BLOCKER UTAMA SEKARANG:** balasan bot SANGAT LAMBAT (26-90+ detik, seharusnya <5 detik).
+   Sebab: API key Gemini kena rate limit free tier (5 request/menit). **Lihat section "⚠️ Known
+   Issues" di atas untuk detail lengkap dan rencana ke depan.** Ini masalah paling penting yang
+   harus diselesaikan dulu sebelum lanjut testing lebih jauh.
+5. ⬜ Alur percakapan penuh (goal → harga → handoff) BELUM ditest — baru greeting + tanya mobil.
+6. ⬜ Audya belum lapor sudah setup Python + venv + ngrok (dengan authtoken-nya SENDIRI, bukan
+   pakai punya Calvin) di laptopnya sendiri. **Dicek ulang di sesi ini — statusnya memang belum
+   berubah, bukan lupa update.**
 
 > **Catatan URL ngrok:** di free tier, URL publik ngrok **berubah acak setiap kali tunnel di-restart**
 > (kecuali upgrade ke paid plan dengan reserved domain). Jadi tiap kali mulai sesi testing baru,
